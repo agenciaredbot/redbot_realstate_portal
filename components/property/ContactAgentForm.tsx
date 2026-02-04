@@ -54,13 +54,39 @@ export function ContactAgentForm({
     setError(null);
 
     try {
-      // TODO: Implement actual API call to save contact and send to GHL
-      // For now, simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch('/api/contact/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          propertyId: propertyId,
+          propertyTitle: propertyTitle,
+          agentId: agent.id,
+          agentName: agent.full_name,
+        }),
+      });
 
-      // Simulate success
-      setIsSubmitted(true);
-    } catch {
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSubmitted(true);
+        // Reset form for next use
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          message: `Hola, estoy interesado/a en la propiedad "${propertyTitle}". Me gustaría recibir más información.`,
+        });
+      } else {
+        throw new Error(result.error || 'Error al enviar el formulario');
+      }
+    } catch (err) {
+      console.error('Error submitting form:', err);
       setError('Hubo un error al enviar el mensaje. Por favor intenta de nuevo.');
     } finally {
       setIsSubmitting(false);
