@@ -39,7 +39,7 @@ export default function BlogPage() {
           <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
             Nuestro Blog
           </p>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-serif mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-heading mb-4">
             Noticias y Consejos
           </h1>
           <p className="text-luxus-gray max-w-2xl mx-auto">
@@ -136,7 +136,7 @@ export default function BlogPage() {
         {/* Newsletter Section */}
         <section className="mt-16 bg-luxus-dark rounded-xl p-8 md:p-12 text-white">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold font-serif mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold font-heading mb-4">
               Suscribete a Nuestro Newsletter
             </h2>
             <p className="text-gray-300 mb-6">

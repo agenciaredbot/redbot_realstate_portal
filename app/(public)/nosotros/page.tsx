@@ -75,7 +75,7 @@ export default function NosotrosPage() {
             <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-4">
               Sobre Nosotros
             </p>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-serif mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6">
               Tu Aliado en el Mercado Inmobiliario
             </h1>
             <p className="text-lg text-gray-300 mb-8">
@@ -143,7 +143,7 @@ export default function NosotrosPage() {
               <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
                 Nuestra Historia
               </p>
-              <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-6">
                 Construyendo Hogares, Creando Historias
               </h2>
               <div className="space-y-4 text-luxus-gray">
@@ -188,7 +188,7 @@ export default function NosotrosPage() {
               <div className="w-14 h-14 bg-luxus-gold/10 rounded-xl flex items-center justify-center mb-6">
                 <Target className="w-7 h-7 text-luxus-gold" />
               </div>
-              <h3 className="text-2xl font-bold text-luxus-dark font-serif mb-4">
+              <h3 className="text-2xl font-bold text-luxus-dark font-heading mb-4">
                 Nuestra Mision
               </h3>
               <p className="text-luxus-gray">
@@ -203,7 +203,7 @@ export default function NosotrosPage() {
               <div className="w-14 h-14 bg-luxus-gold/10 rounded-xl flex items-center justify-center mb-6">
                 <Eye className="w-7 h-7 text-luxus-gold" />
               </div>
-              <h3 className="text-2xl font-bold text-luxus-dark font-serif mb-4">
+              <h3 className="text-2xl font-bold text-luxus-dark font-heading mb-4">
                 Nuestra Vision
               </h3>
               <p className="text-luxus-gray">
@@ -223,7 +223,7 @@ export default function NosotrosPage() {
             <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
               Lo Que Nos Define
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif">
+            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading">
               Nuestros Valores
             </h2>
           </div>
@@ -254,7 +254,7 @@ export default function NosotrosPage() {
             <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
               Conoce al Equipo
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-4">
               Nuestros Agentes
             </h2>
             <p className="text-luxus-gray max-w-2xl mx-auto">
@@ -284,7 +284,7 @@ export default function NosotrosPage() {
       <section className="py-16 md:py-24 bg-luxus-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold font-serif mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-6">
               ¿Listo para Encontrar tu Propiedad Ideal?
             </h2>
             <p className="text-gray-300 mb-8">

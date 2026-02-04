@@ -25,7 +25,7 @@ export function TestimonialsCarousel({ testimonials }: TestimonialsCarouselProps
           <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
             Testimonios
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold font-serif mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">
             Lo Que Dicen Nuestros Clientes
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">

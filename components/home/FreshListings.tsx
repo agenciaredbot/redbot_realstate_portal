@@ -55,7 +55,7 @@ export function FreshListings({ properties, agents }: FreshListingsProps) {
           <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
             Nuevas Propiedades
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-4">
             Listados Recientes
           </h2>
           <p className="text-luxus-gray max-w-2xl mx-auto">

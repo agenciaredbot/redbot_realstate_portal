@@ -72,7 +72,7 @@ export function PropertyOverview({ property, className }: PropertyOverviewProps)
 
   return (
     <div className={cn('bg-white rounded-xl p-6 shadow-luxus', className)}>
-      <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-serif flex items-center gap-2">
+      <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-heading flex items-center gap-2">
         <span className="w-8 h-1 bg-luxus-gold rounded-full" />
         Overview
       </h2>

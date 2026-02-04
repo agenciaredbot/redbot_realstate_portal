@@ -105,7 +105,7 @@ export function PropertyHeader({ property, className }: PropertyHeaderProps) {
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold text-luxus-dark font-serif mb-2">
+      <h1 className="text-2xl md:text-3xl font-bold text-luxus-dark font-heading mb-2">
         {property.title}
       </h1>
 

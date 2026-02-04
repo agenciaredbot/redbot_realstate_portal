@@ -60,7 +60,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
           <span className="text-luxus-gold font-medium text-sm uppercase tracking-wider">
             Categorias Populares
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark mt-2 font-serif">
+          <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark mt-2 font-heading">
             Explora por Tipo de Propiedad
           </h2>
           <p className="text-luxus-gray mt-4 max-w-2xl mx-auto">
@@ -92,7 +92,7 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
               <div className="absolute inset-0 p-6 flex flex-col justify-end">
                 <div className="flex items-end justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-white font-serif mb-1">
+                    <h3 className="text-xl font-semibold text-white font-heading mb-1">
                       {category.label}
                     </h3>
                     <span className="text-sm text-white/70">

@@ -100,7 +100,7 @@ export function AboutSection() {
             </span>
 
             {/* Heading */}
-            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark mt-2 mb-6 font-serif leading-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark mt-2 mb-6 font-heading leading-tight">
               Tu Socio Confiable en el Mercado Inmobiliario
             </h2>
 

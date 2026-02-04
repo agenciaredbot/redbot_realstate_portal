@@ -194,7 +194,7 @@ export function PropiedadesContent({
       <div className="container mx-auto px-4">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-2">
             Propiedades
           </h1>
           <p className="text-luxus-gray">

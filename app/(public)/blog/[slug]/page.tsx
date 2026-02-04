@@ -97,7 +97,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <Badge className="bg-luxus-gold text-white border-0 mb-4">
               {post.category}
             </Badge>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-serif mb-4">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-heading mb-4">
               {post.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-luxus-gray">
@@ -129,7 +129,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Content */}
           <div className="bg-white rounded-xl shadow-luxus p-6 md:p-10 mb-8">
-            <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
+            <div className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
               {/* Render markdown content as HTML - in production, use a proper markdown parser */}
               {post.content.split('\n').map((line, index) => {
                 // Simple markdown parsing
@@ -251,7 +251,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
           <div className="max-w-6xl mx-auto mt-16">
-            <h2 className="text-2xl font-bold text-luxus-dark font-serif mb-6">
+            <h2 className="text-2xl font-bold text-luxus-dark font-heading mb-6">
               Articulos Relacionados
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -264,7 +264,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         {/* CTA */}
         <div className="max-w-4xl mx-auto mt-16 bg-luxus-dark rounded-xl p-8 md:p-12 text-white text-center">
-          <h2 className="text-2xl md:text-3xl font-bold font-serif mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold font-heading mb-4">
             ¿Necesitas Asesoria Inmobiliaria?
           </h2>
           <p className="text-gray-300 mb-6">

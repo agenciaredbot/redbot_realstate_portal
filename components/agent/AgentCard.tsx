@@ -77,7 +77,7 @@ export function AgentCard({ agent, className }: AgentCardProps) {
       <div className="p-5">
         {/* Name and Title */}
         <Link href={`/agentes/${agent.slug}`}>
-          <h3 className="text-xl font-semibold text-luxus-dark hover:text-luxus-gold transition-colors font-serif">
+          <h3 className="text-xl font-semibold text-luxus-dark hover:text-luxus-gold transition-colors font-heading">
             {agent.full_name}
           </h3>
         </Link>

@@ -42,7 +42,7 @@ export function PropertyCard({ property, agent, className }: PropertyCardProps) 
   return (
     <div
       className={cn(
-        'group relative bg-white rounded-2xl overflow-hidden shadow-luxus transition-all duration-300 hover:shadow-luxus-lg',
+        'group relative bg-white rounded-2xl overflow-hidden shadow-luxus transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]',
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -88,7 +88,7 @@ export function PropertyCard({ property, agent, className }: PropertyCardProps) 
         </button>
 
         {/* Price Overlay - Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           <span className="text-xl font-bold text-white drop-shadow-lg">
             {priceWithFrequency}
           </span>
@@ -97,7 +97,7 @@ export function PropertyCard({ property, agent, className }: PropertyCardProps) 
         {/* Hover Content Overlay */}
         <div
           className={cn(
-            'absolute inset-0 bg-white p-6 flex flex-col justify-between transition-all duration-300',
+            'absolute inset-0 bg-white/95 backdrop-blur-sm p-6 flex flex-col justify-between transition-all duration-400 ease-out',
             isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
           )}
         >
@@ -107,7 +107,7 @@ export function PropertyCard({ property, agent, className }: PropertyCardProps) 
           </div>
 
           {/* Title */}
-          <h3 className="text-lg font-bold text-luxus-dark font-serif leading-tight pr-8">
+          <h3 className="text-lg font-bold text-luxus-dark font-heading leading-tight pr-8">
             {property.title}
           </h3>
 
@@ -146,7 +146,7 @@ export function PropertyCard({ property, agent, className }: PropertyCardProps) 
         )}
       >
         {/* Title */}
-        <h3 className="text-lg font-semibold text-luxus-dark font-serif mb-3 line-clamp-1">
+        <h3 className="text-lg font-semibold text-luxus-dark font-heading mb-3 line-clamp-1">
           {property.title}
         </h3>
 

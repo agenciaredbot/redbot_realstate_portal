@@ -59,7 +59,7 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
             </div>
 
             <Link href={`/blog/${post.slug}`}>
-              <h3 className="text-xl md:text-2xl font-bold text-luxus-dark font-serif mb-3 group-hover:text-luxus-gold transition-colors">
+              <h3 className="text-xl md:text-2xl font-bold text-luxus-dark font-heading mb-3 group-hover:text-luxus-gold transition-colors">
                 {post.title}
               </h3>
             </Link>
@@ -113,7 +113,7 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
 
         {/* Title */}
         <Link href={`/blog/${post.slug}`}>
-          <h3 className="text-lg font-semibold text-luxus-dark font-serif mb-2 line-clamp-2 group-hover:text-luxus-gold transition-colors">
+          <h3 className="text-lg font-semibold text-luxus-dark font-heading mb-2 line-clamp-2 group-hover:text-luxus-gold transition-colors">
             {post.title}
           </h3>
         </Link>

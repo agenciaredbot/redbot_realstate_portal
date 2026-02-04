@@ -172,7 +172,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
                 </Badge>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-2">
                 {project.title}
               </h1>
 
@@ -259,7 +259,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
 
             {/* Description */}
             <div className="bg-white rounded-xl shadow-luxus p-6 mb-6">
-              <h2 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+              <h2 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                 Descripción del Proyecto
               </h2>
               <div className="prose prose-luxus max-w-none text-luxus-gray">
@@ -274,7 +274,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
             {/* Unit Types */}
             {project.units && project.units.length > 0 && (
               <div className="bg-white rounded-xl shadow-luxus p-6 mb-6">
-                <h2 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+                <h2 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                   Tipos de Unidades
                 </h2>
                 <div className="overflow-x-auto">
@@ -334,7 +334,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
 
             {/* Amenities */}
             <div className="bg-white rounded-xl shadow-luxus p-6 mb-6">
-              <h2 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+              <h2 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                 Amenidades del Proyecto
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -350,7 +350,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
             {/* Video */}
             {project.video_url && (
               <div className="bg-white rounded-xl shadow-luxus p-6 mb-6">
-                <h2 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+                <h2 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                   Video del Proyecto
                 </h2>
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-luxus-dark">
@@ -366,7 +366,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
 
             {/* Location Map */}
             <div className="bg-white rounded-xl shadow-luxus p-6">
-              <h2 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+              <h2 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                 Ubicación
               </h2>
               <div className="flex items-center gap-2 text-luxus-gray mb-4">
@@ -391,7 +391,7 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
           {/* Right Column - Contact Form */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-xl shadow-luxus p-6 lg:sticky lg:top-24">
-              <h3 className="text-xl font-bold text-luxus-dark font-serif mb-4">
+              <h3 className="text-xl font-bold text-luxus-dark font-heading mb-4">
                 Solicitar Información
               </h3>
 

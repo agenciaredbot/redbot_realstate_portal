@@ -35,19 +35,19 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out',
         isScrolled || !isHomePage
-          ? 'bg-white shadow-md py-3'
+          ? 'bg-white/95 backdrop-blur-md shadow-lg py-3'
           : 'bg-transparent py-5'
       )}
     >
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 group/logo">
             <div
               className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center',
+                'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover/logo:scale-110',
                 isScrolled || !isHomePage
                   ? 'bg-luxus-gold'
                   : 'bg-white'
@@ -66,10 +66,10 @@ export function Navbar() {
             </div>
             <span
               className={cn(
-                'text-xl font-bold hidden sm:block',
+                'text-xl font-bold hidden sm:block transition-colors duration-300',
                 isScrolled || !isHomePage
-                  ? 'text-luxus-dark'
-                  : 'text-white'
+                  ? 'text-luxus-dark group-hover/logo:text-luxus-gold'
+                  : 'text-white group-hover/logo:text-luxus-gold-light'
               )}
             >
               REDBOT
@@ -112,9 +112,11 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                    'relative px-4 py-2 text-sm font-medium transition-colors duration-300',
+                    'after:absolute after:bottom-0 after:left-4 after:right-4 after:h-0.5 after:bg-luxus-gold',
+                    'after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100',
                     pathname === item.href
-                      ? 'text-luxus-gold'
+                      ? 'text-luxus-gold after:scale-x-100'
                       : isScrolled || !isHomePage
                       ? 'text-luxus-dark hover:text-luxus-gold'
                       : 'text-white hover:text-luxus-gold-light'

@@ -30,7 +30,7 @@ export default function ProyectosPage() {
               Nuevos Desarrollos
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-2">
             Proyectos Inmobiliarios
           </h1>
           <p className="text-luxus-gray max-w-2xl">
@@ -124,7 +124,7 @@ export default function ProyectosPage() {
         {/* Info Section */}
         <div className="mt-16 bg-white rounded-xl shadow-luxus p-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-luxus-dark font-serif mb-4">
+            <h2 className="text-2xl font-bold text-luxus-dark font-heading mb-4">
               ¿Por qué invertir en proyectos sobre planos?
             </h2>
             <p className="text-luxus-gray mb-6">

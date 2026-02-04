@@ -80,7 +80,7 @@ export default function ContactoPage() {
             <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
               Contacto
             </p>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-serif mb-4">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-heading mb-4">
               ¿Como Podemos Ayudarte?
             </h1>
             <p className="text-luxus-gray text-lg">
@@ -123,7 +123,7 @@ export default function ContactoPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div className="bg-white rounded-xl shadow-luxus p-8">
-              <h2 className="text-2xl font-bold text-luxus-dark font-serif mb-2">
+              <h2 className="text-2xl font-bold text-luxus-dark font-heading mb-2">
                 Enviar Mensaje
               </h2>
               <p className="text-luxus-gray mb-6">

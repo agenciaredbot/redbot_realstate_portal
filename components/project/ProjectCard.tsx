@@ -83,7 +83,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
       <div className="p-5">
         {/* Title */}
         <Link href={`/proyectos/${project.slug}`}>
-          <h3 className="text-xl font-semibold text-luxus-dark hover:text-luxus-gold transition-colors font-serif line-clamp-1">
+          <h3 className="text-xl font-semibold text-luxus-dark hover:text-luxus-gold transition-colors font-heading line-clamp-1">
             {project.title}
           </h3>
         </Link>

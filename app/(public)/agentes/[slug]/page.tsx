@@ -114,7 +114,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
 
               {/* Info */}
               <div className="p-6">
-                <h1 className="text-2xl font-bold text-luxus-dark font-serif">
+                <h1 className="text-2xl font-bold text-luxus-dark font-heading">
                   {agent.full_name}
                 </h1>
                 <p className="text-luxus-gold font-medium">{agent.title}</p>
@@ -255,7 +255,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
           <div className="lg:col-span-2 space-y-8">
             {/* About */}
             <div className="bg-white rounded-xl shadow-luxus p-6">
-              <h2 className="text-xl font-semibold text-luxus-dark mb-4 font-serif flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-luxus-dark mb-4 font-heading flex items-center gap-2">
                 <span className="w-8 h-1 bg-luxus-gold rounded-full" />
                 Acerca de {agent.first_name}
               </h2>
@@ -304,7 +304,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
             {/* Office Address */}
             {agent.office_address && (
               <div className="bg-white rounded-xl shadow-luxus p-6">
-                <h2 className="text-xl font-semibold text-luxus-dark mb-4 font-serif flex items-center gap-2">
+                <h2 className="text-xl font-semibold text-luxus-dark mb-4 font-heading flex items-center gap-2">
                   <span className="w-8 h-1 bg-luxus-gold rounded-full" />
                   Oficina
                 </h2>
@@ -321,7 +321,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
             {/* Agent Properties */}
             {agentProperties.length > 0 && (
               <div>
-                <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-serif flex items-center gap-2">
+                <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-heading flex items-center gap-2">
                   <span className="w-8 h-1 bg-luxus-gold rounded-full" />
                   Propiedades de {agent.first_name}
                 </h2>

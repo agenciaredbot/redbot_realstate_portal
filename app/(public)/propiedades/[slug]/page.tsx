@@ -117,7 +117,7 @@ export default async function PropertyDetailPage({
             {/* Video (if exists) */}
             {property.video_url && (
               <div className="bg-white rounded-xl p-6 shadow-luxus">
-                <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-serif flex items-center gap-2">
+                <h2 className="text-xl font-semibold text-luxus-dark mb-6 font-heading flex items-center gap-2">
                   <span className="w-8 h-1 bg-luxus-gold rounded-full" />
                   Video
                 </h2>
@@ -157,7 +157,7 @@ export default async function PropertyDetailPage({
 
               {/* Quick Info Card */}
               <div className="bg-white rounded-xl p-6 shadow-luxus mt-6">
-                <h3 className="text-lg font-semibold text-luxus-dark mb-4 font-serif">
+                <h3 className="text-lg font-semibold text-luxus-dark mb-4 font-heading">
                   Información Rápida
                 </h3>
                 <div className="space-y-3 text-sm">

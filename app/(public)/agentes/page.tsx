@@ -23,7 +23,7 @@ export default async function AgentesPage() {
       <div className="container mx-auto px-4">
         {/* Page Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-serif mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-luxus-dark font-heading mb-4">
             Nuestros Agentes
           </h1>
           <p className="text-luxus-gray max-w-2xl mx-auto">
@@ -70,7 +70,7 @@ export default async function AgentesPage() {
 
         {/* CTA Section */}
         <div className="mt-16 bg-luxus-dark rounded-xl p-8 md:p-12 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white font-serif mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-white font-heading mb-4">
             ¿Quieres Ser Parte de Nuestro Equipo?
           </h2>
           <p className="text-luxus-gray-light max-w-2xl mx-auto mb-6">

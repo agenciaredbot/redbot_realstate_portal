@@ -32,7 +32,7 @@ export function FAQSection({
         {(title || subtitle) && (
           <div className="text-center mb-8">
             {title && (
-              <h2 className="text-2xl md:text-3xl font-bold text-luxus-dark font-serif mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-luxus-dark font-heading mb-2">
                 {title}
               </h2>
             )}
@@ -80,7 +80,7 @@ export function FAQSection({
           <p className="text-luxus-gold font-medium uppercase tracking-wider text-sm mb-2">
             {subtitle || '¿Tienes Dudas?'}
           </p>
-          <h2 className="text-2xl md:text-3xl font-bold text-luxus-dark font-serif">
+          <h2 className="text-2xl md:text-3xl font-bold text-luxus-dark font-heading">
             {title}
           </h2>
         </div>

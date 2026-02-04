@@ -95,7 +95,7 @@ export function ContactAgentForm({
   return (
     <div className={cn('bg-white rounded-xl p-6 shadow-luxus', className)}>
       {/* Header */}
-      <h3 className="text-xl font-semibold text-luxus-dark mb-6 font-serif">
+      <h3 className="text-xl font-semibold text-luxus-dark mb-6 font-heading">
         Contactar al Agente
       </h3>
 
