@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Project } from '@/types';
 import { formatPriceCOP } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import PortableText from '@/components/sanity/PortableText';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -263,11 +264,15 @@ export function ProjectDetailContent({ project }: ProjectDetailContentProps) {
                 Descripción del Proyecto
               </h2>
               <div className="prose prose-luxus max-w-none text-luxus-gray">
-                {project.description_full.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-3">
-                    {paragraph}
-                  </p>
-                ))}
+                {Array.isArray(project.description_full) ? (
+                  <PortableText value={project.description_full} />
+                ) : (
+                  project.description_full.split('\n').map((paragraph, index) => (
+                    <p key={index} className="mb-3">
+                      {paragraph}
+                    </p>
+                  ))
+                )}
               </div>
             </div>
 

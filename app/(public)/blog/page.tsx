@@ -9,7 +9,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { getBlogPosts, getBlogCategories } from '@/lib/supabase/queries';
+import { getBlogPosts, getBlogCategories } from '@/lib/sanity/queries';
+import { adaptSanityBlogPosts } from '@/lib/sanity/adapters';
 
 export const metadata: Metadata = {
   title: 'Blog | Redbot Real Estate',
@@ -18,10 +19,12 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const [sortedPosts, categories] = await Promise.all([
+  const [sanityPosts, categories] = await Promise.all([
     getBlogPosts(100),
     getBlogCategories(),
   ]);
+
+  const sortedPosts = adaptSanityBlogPosts(sanityPosts);
 
   const featuredPost = sortedPosts[0];
   const otherPosts = sortedPosts.slice(1);

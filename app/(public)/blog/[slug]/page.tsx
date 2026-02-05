@@ -16,7 +16,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { getBlogPostBySlug, getRelatedBlogPosts, getAllBlogPostSlugs } from '@/lib/supabase/queries';
+import { getBlogPostBySlug, getRelatedBlogPosts, getAllBlogPostSlugs } from '@/lib/sanity/queries';
+import { adaptSanityBlogPost, adaptSanityBlogPosts } from '@/lib/sanity/adapters';
+import PortableText from '@/components/sanity/PortableText';
+import { urlFor } from '@/lib/sanity/client';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -31,21 +34,17 @@ function formatDate(dateString: string): string {
   });
 }
 
-function estimateReadTime(content: string): number {
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  return Math.ceil(words / wordsPerMinute);
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const rawPost = await getBlogPostBySlug(slug);
 
-  if (!post) {
+  if (!rawPost) {
     return {
       title: 'Articulo no encontrado | Redbot Real Estate',
     };
   }
+
+  const post = adaptSanityBlogPost(rawPost);
 
   return {
     title: `${post.title} | Blog Redbot Real Estate`,
@@ -63,18 +62,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const rawPost = await getBlogPostBySlug(slug);
 
-  if (!post) {
+  if (!rawPost) {
     notFound();
   }
 
-  const readTime = estimateReadTime(post.content);
+  const post = adaptSanityBlogPost(rawPost);
+  // Keep the raw Portable Text content for rendering
+  const portableTextContent = rawPost.content;
 
   // Get related posts (same category, excluding current post)
-  const relatedPosts = post.category
-    ? await getRelatedBlogPosts(post.category, post.slug, 3)
+  const rawRelatedPosts = post.category
+    ? await getRelatedBlogPosts(post.category, slug, 3)
     : [];
+  const relatedPosts = adaptSanityBlogPosts(rawRelatedPosts);
+
+  // Featured image URL
+  const featuredImageUrl = rawPost.featuredImage?.asset
+    ? urlFor(rawPost.featuredImage).width(1200).height(675).url()
+    : post.featured_image;
+
+  // Author avatar URL
+  const authorAvatarUrl = rawPost.authorAvatar?.asset
+    ? urlFor(rawPost.authorAvatar).width(200).url()
+    : post.author_avatar;
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-20">
@@ -111,7 +123,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                {readTime} min de lectura
+                5 min de lectura
               </span>
             </div>
           </div>
@@ -119,7 +131,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Featured Image */}
           <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-8">
             <Image
-              src={post.featured_image}
+              src={featuredImageUrl}
               alt={post.title}
               fill
               className="object-cover"
@@ -127,53 +139,14 @@ export default async function BlogPostPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Content */}
+          {/* Content - Now renders Portable Text from Sanity */}
           <div className="bg-white rounded-xl shadow-luxus p-6 md:p-10 mb-8">
             <div className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
-              {/* Render markdown content as HTML - in production, use a proper markdown parser */}
-              {post.content.split('\n').map((line: string, index: number) => {
-                // Simple markdown parsing
-                if (line.startsWith('# ')) {
-                  return (
-                    <h1 key={index} className="text-3xl font-bold mt-8 mb-4">
-                      {line.replace('# ', '')}
-                    </h1>
-                  );
-                }
-                if (line.startsWith('## ')) {
-                  return (
-                    <h2 key={index} className="text-2xl font-bold mt-6 mb-3">
-                      {line.replace('## ', '')}
-                    </h2>
-                  );
-                }
-                if (line.startsWith('### ')) {
-                  return (
-                    <h3 key={index} className="text-xl font-bold mt-4 mb-2">
-                      {line.replace('### ', '')}
-                    </h3>
-                  );
-                }
-                if (line.startsWith('- ')) {
-                  return (
-                    <li key={index} className="ml-4">
-                      {line.replace('- ', '')}
-                    </li>
-                  );
-                }
-                if (line.startsWith('|')) {
-                  // Skip table formatting for now
-                  return null;
-                }
-                if (line.trim() === '') {
-                  return <br key={index} />;
-                }
-                return (
-                  <p key={index} className="mb-4">
-                    {line}
-                  </p>
-                );
-              })}
+              {portableTextContent && Array.isArray(portableTextContent) ? (
+                <PortableText value={portableTextContent} />
+              ) : (
+                <p className="text-luxus-gray">{post.excerpt}</p>
+              )}
             </div>
           </div>
 
@@ -224,10 +197,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Author Box */}
           <div className="bg-white rounded-xl shadow-luxus p-6 mb-8">
             <div className="flex items-start gap-4">
-              {post.author_avatar && (
+              {authorAvatarUrl && (
                 <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={post.author_avatar}
+                    src={authorAvatarUrl}
                     alt={post.author_name}
                     fill
                     className="object-cover"
@@ -294,7 +267,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   const slugs = await getAllBlogPostSlugs();
-  return slugs.map((p) => ({
+  return slugs.map((p: { slug: string }) => ({
     slug: p.slug,
   }));
 }

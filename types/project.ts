@@ -18,12 +18,15 @@ export interface ProjectUnit {
   available: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PortableTextBlock = any[];
+
 export interface Project {
   id: string;
   slug: string;
   title: string;
   description_short: string;
-  description_full: string;
+  description_full: string | PortableTextBlock;
 
   // Developer Info
   developer_name: string;

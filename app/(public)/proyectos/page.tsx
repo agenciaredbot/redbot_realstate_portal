@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { Building2, Filter } from 'lucide-react';
 import { ProjectCard } from '@/components/project/ProjectCard';
-import { getProjects } from '@/lib/supabase/queries';
+import { getProjects } from '@/lib/sanity/queries';
+import { adaptSanityProjects } from '@/lib/sanity/adapters';
 import {
   Select,
   SelectContent,
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ProyectosPage() {
-  const projects = await getProjects();
+  const sanityProjects = await getProjects();
+  const projects = adaptSanityProjects(sanityProjects);
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-24 pb-16">

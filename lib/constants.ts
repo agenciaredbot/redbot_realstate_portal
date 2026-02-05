@@ -1,4 +1,4 @@
-import type { NavItem, Service, PropertyCategory, Amenity, PropertyType } from '@/types';
+import type { NavItem, PropertyCategory, Amenity, PropertyType } from '@/types';
 
 // Navigation Items
 export const MAIN_NAV_ITEMS: NavItem[] = [
@@ -102,52 +102,6 @@ export const AMENITIES_LIST: Amenity[] = [
   'BBQ',
   'Salon Comunal',
   'Parqueadero Visitantes',
-];
-
-// Services for Homepage
-export const SERVICES: Service[] = [
-  {
-    id: '1',
-    title: 'Compra de Propiedades',
-    description: 'Te ayudamos a encontrar la propiedad perfecta que se ajuste a tus necesidades y presupuesto.',
-    icon: 'Home',
-    order: 1,
-  },
-  {
-    id: '2',
-    title: 'Venta de Propiedades',
-    description: 'Maximiza el valor de tu propiedad con nuestras estrategias de marketing y red de compradores.',
-    icon: 'DollarSign',
-    order: 2,
-  },
-  {
-    id: '3',
-    title: 'Arriendos',
-    description: 'Encuentra el arriendo ideal o gestiona tus propiedades en renta con total tranquilidad.',
-    icon: 'Key',
-    order: 3,
-  },
-  {
-    id: '4',
-    title: 'Administracion de Propiedades',
-    description: 'Gestionamos tu portafolio inmobiliario de manera profesional y eficiente.',
-    icon: 'Building2',
-    order: 4,
-  },
-  {
-    id: '5',
-    title: 'Asesoria Inmobiliaria',
-    description: 'Recibe orientacion experta para tomar las mejores decisiones en el mercado inmobiliario.',
-    icon: 'MessageCircle',
-    order: 5,
-  },
-  {
-    id: '6',
-    title: 'Financiamiento',
-    description: 'Te conectamos con las mejores opciones de credito hipotecario del mercado.',
-    icon: 'Landmark',
-    order: 6,
-  },
 ];
 
 // Default Property Categories with placeholder images

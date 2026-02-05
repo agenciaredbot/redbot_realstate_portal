@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Landmark,
 } from 'lucide-react';
-import { SERVICES } from '@/lib/constants';
+import type { Service } from '@/types';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Home,
@@ -19,7 +19,15 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Landmark,
 };
 
-export function ServicesSection() {
+interface ServicesSectionProps {
+  services?: Service[];
+}
+
+export function ServicesSection({ services }: ServicesSectionProps) {
+  if (!services || services.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -39,7 +47,7 @@ export function ServicesSection() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES.map((service) => {
+          {services.map((service) => {
             const IconComponent = iconMap[service.icon] || Home;
 
             return (

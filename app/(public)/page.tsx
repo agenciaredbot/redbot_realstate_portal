@@ -11,22 +11,36 @@ import {
   getFeaturedProperties,
   getRecentProperties,
   getAgents,
-  getTestimonials,
-  getBlogPosts,
   getPropertyCategoriesWithCounts,
 } from '@/lib/supabase/queries';
+import {
+  getTestimonials as getSanityTestimonials,
+  getBlogPosts as getSanityBlogPosts,
+  getServices as getSanityServices,
+} from '@/lib/sanity/queries';
+import {
+  adaptSanityTestimonials,
+  adaptSanityBlogPosts,
+  adaptSanityServices,
+} from '@/lib/sanity/adapters';
 
 export default async function HomePage() {
-  // Fetch all data from Supabase in parallel
-  const [featuredProperties, recentProperties, agents, testimonials, blogPosts, categories] =
+  // Fetch data from Supabase (properties, agents, categories) and Sanity (blog, testimonials, services) in parallel
+  const [featuredProperties, recentProperties, agents, sanityTestimonials, sanityBlogPosts, categories, sanityServices] =
     await Promise.all([
       getFeaturedProperties(6),
       getRecentProperties(9),
       getAgents(),
-      getTestimonials(10),
-      getBlogPosts(3),
+      getSanityTestimonials(10),
+      getSanityBlogPosts(3),
       getPropertyCategoriesWithCounts(),
+      getSanityServices(),
     ]);
+
+  // Adapt Sanity data to match existing TypeScript types
+  const testimonials = adaptSanityTestimonials(sanityTestimonials);
+  const blogPosts = adaptSanityBlogPosts(sanityBlogPosts);
+  const services = adaptSanityServices(sanityServices);
 
   // Create agents map for property cards
   const agentsMap = agents.reduce(
@@ -59,7 +73,7 @@ export default async function HomePage() {
       <FeaturedListings properties={featuredProperties} agents={agentsMap} />
 
       {/* Our Services */}
-      <ServicesSection />
+      <ServicesSection services={services} />
 
       {/* Fresh Listings with Tabs */}
       <FreshListings properties={recentProperties} agents={agentsMap} />

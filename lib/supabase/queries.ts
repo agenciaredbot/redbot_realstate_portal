@@ -208,125 +208,9 @@ export async function getAgentWithProperties(slug: string) {
 }
 
 // =====================================================
-// TESTIMONIALS QUERIES
+// TESTIMONIALS, BLOG, PROJECTS → Moved to Sanity CMS
+// See: lib/sanity/queries.ts
 // =====================================================
-
-export async function getTestimonials(limit = 10) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('testimonials')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching testimonials:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-// =====================================================
-// BLOG POSTS QUERIES
-// =====================================================
-
-export async function getBlogPosts(limit = 10) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-export async function getBlogPostBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
-
-  if (error) {
-    console.error('Error fetching blog post:', error);
-    return null;
-  }
-
-  return data;
-}
-
-// =====================================================
-// PROJECTS QUERIES
-// =====================================================
-
-export async function getProjects(limit = 10) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching projects:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-export async function getProjectBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single();
-
-  if (error) {
-    console.error('Error fetching project:', error);
-    return null;
-  }
-
-  return data;
-}
-
-export async function getFeaturedProjects(limit = 4) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('is_active', true)
-    .eq('is_featured', true)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching featured projects:', error);
-    return [];
-  }
-
-  return data || [];
-}
 
 // =====================================================
 // CONTACT SUBMISSIONS
@@ -447,37 +331,7 @@ export async function getAllAgentSlugs() {
   return data || [];
 }
 
-export async function getAllBlogPostSlugs() {
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('slug')
-    .eq('is_published', true);
-
-  if (error) {
-    console.error('Error fetching blog post slugs:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-export async function getAllProjectSlugs() {
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
-    .from('projects')
-    .select('slug')
-    .eq('is_active', true);
-
-  if (error) {
-    console.error('Error fetching project slugs:', error);
-    return [];
-  }
-
-  return data || [];
-}
+// Blog/Project slugs → Moved to Sanity CMS (lib/sanity/queries.ts)
 
 // =====================================================
 // UTILITY FUNCTIONS
@@ -594,42 +448,4 @@ export async function getPropertyCategoriesWithCounts() {
   }));
 }
 
-// =====================================================
-// BLOG CATEGORIES & RELATED POSTS
-// =====================================================
-
-export async function getBlogCategories() {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('category')
-    .eq('is_published', true);
-
-  if (error) {
-    console.error('Error fetching blog categories:', error);
-    return [];
-  }
-
-  return [...new Set((data || []).map((p) => p.category).filter(Boolean))];
-}
-
-export async function getRelatedBlogPosts(category: string, excludeSlug: string, limit = 3) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('is_published', true)
-    .eq('category', category)
-    .neq('slug', excludeSlug)
-    .order('published_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching related blog posts:', error);
-    return [];
-  }
-
-  return data || [];
-}
+// Blog categories & related posts → Moved to Sanity CMS (lib/sanity/queries.ts)
