@@ -127,7 +127,7 @@ export function mapAirtablePropertyToSupabase(
 
     // Specs
     bedrooms: fields.Bedrooms || 0,
-    bathrooms: (fields.Bathrooms || 0) + (fields.Half_Bathrooms || 0) * 0.5,
+    bathrooms: Math.ceil((fields.Bathrooms || 0) + (fields.Half_Bathrooms || 0) * 0.5),
     parking_spots: fields.Parking_Spaces || 0,
     area_m2: fields.Square_Meters || null,
     area_built_m2: null, // Not in your Airtable
@@ -179,6 +179,7 @@ export function mapAirtableAgentToSupabase(
     : null;
 
   return {
+    airtable_id: airtableId,
     slug,
     first_name: firstName,
     last_name: lastName,

@@ -11,20 +11,29 @@ export interface ContactSubmission {
   agent_id?: string;
 
   // Contact Info
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  phone?: string;
+  phone: string;
   message: string;
 
-  // Source
-  source_page: string;
-  source_url?: string;
+  // Inquiry
+  inquiry_type: 'comprar' | 'vender' | 'arrendar' | 'inversion' | 'otro' | 'property_inquiry';
+
+  // CRM Integration
+  ghl_contact_id?: string;
+  ghl_synced_at?: string;
+
+  // Status tracking
+  status: string;
+  notes?: string;
 
   // Metadata
+  source: string;
+  ip_address?: string;
+  user_agent?: string;
   created_at: string;
-  is_processed: boolean;
-  ghl_contact_id?: string;
-  ghl_opportunity_id?: string;
+  updated_at: string;
 }
 
 // Site Configuration Types
@@ -91,12 +100,16 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
-  featured_image_url: string;
+  featured_image: string;
   author_name: string;
-  author_photo_url?: string;
+  author_avatar?: string;
   category: string;
   tags: string[];
+  meta_title?: string;
+  meta_description?: string;
+  is_published: boolean;
   published_at: string;
+  views_count: number;
   created_at: string;
   updated_at: string;
 }

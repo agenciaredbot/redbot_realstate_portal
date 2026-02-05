@@ -42,12 +42,24 @@ export async function POST(request: Request) {
       const agentName = record.fields.Full_Name || 'Unknown Agent';
 
       try {
-        // Check if agent already exists (by email since it's unique)
-        const { data: existingAgent } = await supabase
+        // Check if agent already exists (by airtable_id first, fallback to email)
+        let existingAgent = null;
+        const { data: byAirtableId } = await supabase
           .from('agents')
           .select('id')
-          .eq('email', agentData.email)
+          .eq('airtable_id', record.id)
           .single();
+
+        if (byAirtableId) {
+          existingAgent = byAirtableId;
+        } else {
+          const { data: byEmail } = await supabase
+            .from('agents')
+            .select('id')
+            .eq('email', agentData.email as string)
+            .single();
+          existingAgent = byEmail;
+        }
 
         if (existingAgent) {
           // Update existing agent

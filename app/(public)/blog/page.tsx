@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { MOCK_BLOG_POSTS } from '@/lib/mock-data';
+import { getBlogPosts, getBlogCategories } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Blog | Redbot Real Estate',
@@ -17,16 +17,11 @@ export const metadata: Metadata = {
     'Noticias, consejos y guias del mercado inmobiliario colombiano. Mantente informado con Redbot Real Estate.',
 };
 
-// Get unique categories from posts
-const categories = Array.from(
-  new Set(MOCK_BLOG_POSTS.map((post) => post.category))
-);
-
-export default function BlogPage() {
-  // Sort posts by date (newest first)
-  const sortedPosts = [...MOCK_BLOG_POSTS].sort(
-    (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
-  );
+export default async function BlogPage() {
+  const [sortedPosts, categories] = await Promise.all([
+    getBlogPosts(100),
+    getBlogCategories(),
+  ]);
 
   const featuredPost = sortedPosts[0];
   const otherPosts = sortedPosts.slice(1);
@@ -105,7 +100,7 @@ export default function BlogPage() {
         )}
 
         {/* Empty State */}
-        {MOCK_BLOG_POSTS.length === 0 && (
+        {sortedPosts.length === 0 && (
           <div className="text-center py-16">
             <p className="text-luxus-gray">
               No hay articulos disponibles en este momento.
@@ -114,7 +109,7 @@ export default function BlogPage() {
         )}
 
         {/* Pagination (simplified for now) */}
-        {MOCK_BLOG_POSTS.length > 6 && (
+        {sortedPosts.length > 6 && (
           <div className="mt-12 flex justify-center">
             <div className="flex items-center gap-2">
               <button className="px-4 py-2 rounded-lg border border-luxus-gray-light text-luxus-gray hover:border-luxus-gold hover:text-luxus-gold transition-colors">

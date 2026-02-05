@@ -23,17 +23,22 @@ export async function POST(request: Request) {
 
     const supabase = createAdminClient();
 
-    // First, get all agents to build the ID mapping
+    // First, get all agents to build the Airtable ID → Supabase UUID mapping
+    // Note: This requires that agents have been synced first (with airtable_id stored)
     const { data: agents } = await supabase
       .from('agents')
-      .select('id, email');
+      .select('id, airtable_id');
 
     // Build a map of Airtable agent IDs to Supabase UUIDs
-    // Note: This requires that agents have been synced first
-    // For now, we'll skip agent linking if not available
     const agentIdMap = new Map<string, string>();
-    // TODO: Implement proper Airtable ID to Supabase ID mapping
-    // This would require storing the Airtable ID in the agents table
+    if (agents) {
+      for (const agent of agents) {
+        if (agent.airtable_id) {
+          agentIdMap.set(agent.airtable_id, agent.id);
+        }
+      }
+    }
+    console.log(`Built agent ID map with ${agentIdMap.size} entries`);
 
     // Get all properties from Airtable
     const airtableProperties = await getAllRecords<AirtablePropertyFields>(

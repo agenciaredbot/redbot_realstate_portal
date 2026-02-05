@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { getBlogPostBySlug, MOCK_BLOG_POSTS } from '@/lib/mock-data';
+import { getBlogPostBySlug, getRelatedBlogPosts, getAllBlogPostSlugs } from '@/lib/supabase/queries';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -39,7 +39,7 @@ function estimateReadTime(content: string): number {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getBlogPostBySlug(slug);
 
   if (!post) {
     return {
@@ -53,17 +53,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: [post.featured_image_url],
+      images: post.featured_image ? [post.featured_image] : [],
       type: 'article',
       publishedTime: post.published_at,
-      authors: [post.author_name],
+      authors: post.author_name ? [post.author_name] : [],
     },
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -72,9 +72,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const readTime = estimateReadTime(post.content);
 
   // Get related posts (same category, excluding current post)
-  const relatedPosts = MOCK_BLOG_POSTS.filter(
-    (p) => p.category === post.category && p.id !== post.id
-  ).slice(0, 3);
+  const relatedPosts = post.category
+    ? await getRelatedBlogPosts(post.category, post.slug, 3)
+    : [];
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-20">
@@ -119,7 +119,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Featured Image */}
           <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-8">
             <Image
-              src={post.featured_image_url}
+              src={post.featured_image}
               alt={post.title}
               fill
               className="object-cover"
@@ -131,7 +131,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           <div className="bg-white rounded-xl shadow-luxus p-6 md:p-10 mb-8">
             <div className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
               {/* Render markdown content as HTML - in production, use a proper markdown parser */}
-              {post.content.split('\n').map((line, index) => {
+              {post.content.split('\n').map((line: string, index: number) => {
                 // Simple markdown parsing
                 if (line.startsWith('# ')) {
                   return (
@@ -185,7 +185,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <span className="text-sm font-medium text-luxus-dark mr-2">
                   Tags:
                 </span>
-                {post.tags.map((tag) => (
+                {post.tags.map((tag: string) => (
                   <Link
                     key={tag}
                     href={`/blog?tag=${tag}`}
@@ -224,10 +224,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Author Box */}
           <div className="bg-white rounded-xl shadow-luxus p-6 mb-8">
             <div className="flex items-start gap-4">
-              {post.author_photo_url && (
+              {post.author_avatar && (
                 <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={post.author_photo_url}
+                    src={post.author_avatar}
                     alt={post.author_name}
                     fill
                     className="object-cover"
@@ -292,8 +292,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   );
 }
 
-export function generateStaticParams() {
-  return MOCK_BLOG_POSTS.map((post) => ({
-    slug: post.slug,
+export async function generateStaticParams() {
+  const slugs = await getAllBlogPostSlugs();
+  return slugs.map((p) => ({
+    slug: p.slug,
   }));
 }

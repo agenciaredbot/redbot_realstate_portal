@@ -43,12 +43,15 @@ export async function getAllRecords<T>(
 
   const records: Array<{ id: string; fields: T }> = [];
 
+  // Build select params, filtering out undefined values
+  // Airtable SDK rejects undefined values for select params
+  const selectParams: Record<string, unknown> = {};
+  if (options?.view) selectParams.view = options.view;
+  if (options?.filterByFormula) selectParams.filterByFormula = options.filterByFormula;
+  if (options?.maxRecords) selectParams.maxRecords = options.maxRecords;
+
   await airtableBase(tableName)
-    .select({
-      view: options?.view,
-      filterByFormula: options?.filterByFormula,
-      maxRecords: options?.maxRecords,
-    })
+    .select(selectParams)
     .eachPage((pageRecords, fetchNextPage) => {
       pageRecords.forEach((record) => {
         records.push({

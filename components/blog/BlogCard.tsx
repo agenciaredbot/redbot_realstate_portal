@@ -35,7 +35,7 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
           {/* Image */}
           <div className="relative w-full md:w-1/2 aspect-video md:aspect-auto">
             <Image
-              src={post.featured_image_url}
+              src={post.featured_image}
               alt={post.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -91,7 +91,7 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
       {/* Image */}
       <div className="relative aspect-[16/10] overflow-hidden">
         <Image
-          src={post.featured_image_url}
+          src={post.featured_image}
           alt={post.title}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -126,10 +126,10 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
         {/* Author & Read More */}
         <div className="flex items-center justify-between pt-4 border-t border-luxus-gray-light">
           <div className="flex items-center gap-2">
-            {post.author_photo_url && (
+            {post.author_avatar && (
               <div className="relative w-8 h-8 rounded-full overflow-hidden">
                 <Image
-                  src={post.author_photo_url}
+                  src={post.author_avatar}
                   alt={post.author_name}
                   fill
                   className="object-cover"

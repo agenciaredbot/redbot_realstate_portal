@@ -13,17 +13,19 @@ import {
   getAgents,
   getTestimonials,
   getBlogPosts,
+  getPropertyCategoriesWithCounts,
 } from '@/lib/supabase/queries';
 
 export default async function HomePage() {
   // Fetch all data from Supabase in parallel
-  const [featuredProperties, recentProperties, agents, testimonials, blogPosts] =
+  const [featuredProperties, recentProperties, agents, testimonials, blogPosts, categories] =
     await Promise.all([
       getFeaturedProperties(6),
       getRecentProperties(9),
       getAgents(),
       getTestimonials(10),
       getBlogPosts(3),
+      getPropertyCategoriesWithCounts(),
     ]);
 
   // Create agents map for property cards
@@ -51,7 +53,7 @@ export default async function HomePage() {
       <AboutSection />
 
       {/* Property Categories */}
-      <CategoriesSection />
+      <CategoriesSection categories={categories} />
 
       {/* Featured/Exclusive Listings */}
       <FeaturedListings properties={featuredProperties} agents={agentsMap} />

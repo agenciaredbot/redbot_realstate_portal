@@ -550,3 +550,86 @@ export async function getAgentsCount() {
 
   return count || 0;
 }
+
+// =====================================================
+// PROPERTY CATEGORIES (for homepage)
+// =====================================================
+
+export async function getPropertyCategoriesWithCounts() {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('properties')
+    .select('property_type')
+    .eq('is_active', true);
+
+  if (error) {
+    console.error('Error fetching property categories:', error);
+    return [];
+  }
+
+  // Count properties per type
+  const countMap: Record<string, number> = {};
+  (data || []).forEach((p) => {
+    countMap[p.property_type] = (countMap[p.property_type] || 0) + 1;
+  });
+
+  // Map to category objects with labels and images
+  const categoryConfig: Record<string, { label: string; image: string }> = {
+    apartamento: { label: 'Apartamentos', image: '/images/categories/apartment.jpg' },
+    casa: { label: 'Casas', image: '/images/categories/house.jpg' },
+    oficina: { label: 'Oficinas', image: '/images/categories/office.jpg' },
+    local: { label: 'Locales Comerciales', image: '/images/categories/commercial.jpg' },
+    lote: { label: 'Lotes', image: '/images/categories/land.jpg' },
+    finca: { label: 'Fincas', image: '/images/categories/farm.jpg' },
+    bodega: { label: 'Bodegas', image: '/images/categories/warehouse.jpg' },
+    consultorio: { label: 'Consultorios', image: '/images/categories/office.jpg' },
+  };
+
+  return Object.entries(countMap).map(([type, count]) => ({
+    type,
+    label: categoryConfig[type]?.label || type,
+    image_url: categoryConfig[type]?.image || '/images/categories/apartment.jpg',
+    count,
+  }));
+}
+
+// =====================================================
+// BLOG CATEGORIES & RELATED POSTS
+// =====================================================
+
+export async function getBlogCategories() {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('category')
+    .eq('is_published', true);
+
+  if (error) {
+    console.error('Error fetching blog categories:', error);
+    return [];
+  }
+
+  return [...new Set((data || []).map((p) => p.category).filter(Boolean))];
+}
+
+export async function getRelatedBlogPosts(category: string, excludeSlug: string, limit = 3) {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .eq('category', category)
+    .neq('slug', excludeSlug)
+    .order('published_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching related blog posts:', error);
+    return [];
+  }
+
+  return data || [];
+}

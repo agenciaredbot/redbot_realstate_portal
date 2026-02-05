@@ -135,18 +135,24 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = createAdminClient();
 
+      // Mapear inquiryType a enum válido de la DB
+      const validInquiryTypes = ['comprar', 'vender', 'arrendar', 'inversion', 'otro', 'property_inquiry'];
+      const dbInquiryType = inquiryType && validInquiryTypes.includes(inquiryType)
+        ? inquiryType
+        : isPropertyForm ? 'property_inquiry' : 'otro';
+
       const { error: dbError } = await supabase.from('contact_submissions').insert({
-        full_name: `${firstName} ${lastName}`,
+        first_name: firstName,
+        last_name: lastName,
         email,
-        phone: phone || null,
+        phone: phone || '',
         message,
+        inquiry_type: dbInquiryType,
         property_id: propertyId,
-        source_page: inquiryType,
-        source_url: sourceUrl,
         ghl_contact_id: ghlContactId,
-        ghl_opportunity_id: ghlOpportunityId,
-        is_processed: ghlContactId !== null,
-        created_at: new Date().toISOString(),
+        ghl_synced_at: ghlContactId ? new Date().toISOString() : null,
+        source: 'website',
+        status: ghlContactId ? 'sincronizado' : 'nuevo',
       });
 
       if (dbError) {

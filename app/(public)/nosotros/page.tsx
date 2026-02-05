@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AgentCard } from '@/components/agent/AgentCard';
-import { MOCK_AGENTS } from '@/lib/mock-data';
+import { getAgents } from '@/lib/supabase/queries';
 
 export const metadata: Metadata = {
   title: 'Nosotros | Redbot Real Estate',
@@ -55,8 +55,9 @@ const values = [
   },
 ];
 
-export default function NosotrosPage() {
-  const featuredAgents = MOCK_AGENTS.filter((a) => a.is_active).slice(0, 4);
+export default async function NosotrosPage() {
+  const allAgents = await getAgents();
+  const featuredAgents = allAgents.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-luxus-cream">

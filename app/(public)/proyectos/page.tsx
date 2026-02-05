@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { Building2, Filter } from 'lucide-react';
 import { ProjectCard } from '@/components/project/ProjectCard';
-import { getActiveProjects } from '@/lib/mock-data';
+import { getProjects } from '@/lib/supabase/queries';
 import {
   Select,
   SelectContent,
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     'Descubre los mejores proyectos inmobiliarios en Colombia. Apartamentos, casas y locales comerciales en preventa y construcción.',
 };
 
-export default function ProyectosPage() {
-  const projects = getActiveProjects();
+export default async function ProyectosPage() {
+  const projects = await getProjects();
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-24 pb-16">

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProjectBySlug, MOCK_PROJECTS } from '@/lib/mock-data';
+import { getProjectBySlug, getAllProjectSlugs } from '@/lib/supabase/queries';
 import { ProjectDetailContent } from './ProjectDetailContent';
 
 interface PageProps {
@@ -9,7 +9,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     return {
@@ -18,19 +18,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${project.title} | Redbot Real Estate`,
+    title: `${project.name} | Redbot Real Estate`,
     description: project.description_short,
     openGraph: {
-      title: project.title,
+      title: project.name,
       description: project.description_short,
-      images: project.images[0]?.url ? [project.images[0].url] : [],
+      images: project.images?.[0] ? [project.images[0]] : [],
     },
   };
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     notFound();
@@ -39,8 +39,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   return <ProjectDetailContent project={project} />;
 }
 
-export function generateStaticParams() {
-  return MOCK_PROJECTS.map((project) => ({
-    slug: project.slug,
+export async function generateStaticParams() {
+  const slugs = await getAllProjectSlugs();
+  return slugs.map((p) => ({
+    slug: p.slug,
   }));
 }

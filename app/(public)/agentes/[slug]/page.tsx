@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PropertyCard } from '@/components/property/PropertyCard';
-import { MOCK_AGENTS, MOCK_PROPERTIES } from '@/lib/mock-data';
+import { getAgentWithProperties, getAllAgentSlugs } from '@/lib/supabase/queries';
+import { Property } from '@/types';
 
 interface AgentDetailPageProps {
   params: Promise<{
@@ -22,20 +23,11 @@ interface AgentDetailPageProps {
   }>;
 }
 
-// Get agent by slug
-function getAgentBySlug(slug: string) {
-  return MOCK_AGENTS.find((agent) => agent.slug === slug);
-}
-
-// Get agent properties
-function getAgentProperties(agentId: string) {
-  return MOCK_PROPERTIES.filter((property) => property.agent_id === agentId);
-}
-
 // Generate static params
 export async function generateStaticParams() {
-  return MOCK_AGENTS.map((agent) => ({
-    slug: agent.slug,
+  const slugs = await getAllAgentSlugs();
+  return slugs.map((a) => ({
+    slug: a.slug,
   }));
 }
 
@@ -44,21 +36,24 @@ export async function generateMetadata({
   params,
 }: AgentDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const agent = getAgentBySlug(slug);
+  const agentData = await getAgentWithProperties(slug);
 
-  if (!agent) {
+  if (!agentData) {
     return {
       title: 'Agente no encontrado | Redbot Real Estate',
     };
   }
 
+  const fullName = `${agentData.first_name} ${agentData.last_name}`;
+  const bio = agentData.bio || '';
+
   return {
-    title: `${agent.full_name} - ${agent.title} | Redbot Real Estate`,
-    description: agent.bio.substring(0, 160),
+    title: `${fullName} - ${agentData.role} | Redbot Real Estate`,
+    description: bio.substring(0, 160) || `Agente inmobiliario ${fullName}`,
     openGraph: {
-      title: `${agent.full_name} - ${agent.title}`,
-      description: agent.bio.substring(0, 160),
-      images: [agent.photo_url],
+      title: `${fullName} - ${agentData.role}`,
+      description: bio.substring(0, 160) || `Agente inmobiliario ${fullName}`,
+      images: agentData.photo_url ? [agentData.photo_url] : [],
       type: 'profile',
     },
   };
@@ -66,14 +61,28 @@ export async function generateMetadata({
 
 export default async function AgentDetailPage({ params }: AgentDetailPageProps) {
   const { slug } = await params;
-  const agent = getAgentBySlug(slug);
+  const agentData = await getAgentWithProperties(slug);
 
-  if (!agent) {
+  if (!agentData) {
     notFound();
   }
 
-  const agentProperties = getAgentProperties(agent.id);
-  const yearsExperience = new Date().getFullYear() - new Date(agent.created_at).getFullYear();
+  // Build compatible agent object from Supabase data
+  const agent = {
+    ...agentData,
+    full_name: `${agentData.first_name} ${agentData.last_name}`,
+    title: agentData.role || 'Agente Inmobiliario',
+    city: 'Colombia',
+    bio: agentData.bio || 'Agente inmobiliario profesional con experiencia en el mercado colombiano.',
+    rating: null as number | null,
+    reviews_count: null as number | null,
+    properties_count: agentData.properties?.length || 0,
+    sales_count: 0,
+    whatsapp: agentData.social_links?.whatsapp || null,
+    office_address: null as string | null,
+  };
+  const agentProperties = agentData.properties || [];
+  const yearsExperience = agentData.years_experience || 0;
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-24 pb-16">
@@ -326,7 +335,7 @@ export default async function AgentDetailPage({ params }: AgentDetailPageProps) 
                   Propiedades de {agent.first_name}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {agentProperties.slice(0, 4).map((property) => (
+                  {agentProperties.slice(0, 4).map((property: Property) => (
                     <PropertyCard
                       key={property.id}
                       property={property}
