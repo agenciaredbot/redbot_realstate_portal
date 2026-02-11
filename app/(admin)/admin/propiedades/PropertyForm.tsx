@@ -14,8 +14,7 @@ import {
   Square,
   Save,
   ArrowLeft,
-  Upload,
-  X,
+  ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 import Link from 'next/link';
 
 interface PropertyFormProps {
@@ -52,6 +52,7 @@ interface PropertyFormProps {
     square_meters?: number;
     amenities?: string[];
     agent_id?: string;
+    images?: string[];
   };
 }
 
@@ -123,6 +124,7 @@ export function PropertyForm({
     square_meters: initialData.square_meters || 0,
     amenities: initialData.amenities || [],
     agent_id: initialData.agent_id || '',
+    images: initialData.images || [],
   });
 
   const isAdmin = userRole === USER_ROLES.ADMIN;
@@ -460,6 +462,24 @@ export function PropertyForm({
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Images */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Imágenes de la Propiedad
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ImageUploader
+            images={formData.images}
+            onChange={(images) => setFormData((prev) => ({ ...prev, images }))}
+            maxImages={10}
+            disabled={isLoading}
+          />
         </CardContent>
       </Card>
 

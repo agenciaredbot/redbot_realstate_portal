@@ -15,7 +15,7 @@ const PROPERTY_TYPE_MAP: Record<string, string> = {
   'Penthouse': 'apartamento',
   'Estudio': 'apartamento',
   'Consultorio': 'consultorio',
-  // Valores ya en minusculas (por si vienen asi)
+  // Valores ya en minusculas
   'apartamento': 'apartamento',
   'casa': 'casa',
   'oficina': 'oficina',
@@ -26,20 +26,13 @@ const PROPERTY_TYPE_MAP: Record<string, string> = {
   'consultorio': 'consultorio',
 };
 
-// Helper to generate slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove accents
-    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-    .slice(0, 100); // Limit length
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const profile = await getUserProfile();
+    const { id } = await params;
 
     if (!profile) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -66,53 +59,36 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // Generate unique slug
-    let baseSlug = generateSlug(data.title);
-    let slug = baseSlug;
-    let counter = 1;
+    // Check if property exists and user has permission
+    const { data: existingProperty } = await supabase
+      .from('properties')
+      .select('id, submitted_by')
+      .eq('id', id)
+      .single();
 
-    // Check for existing slugs and make unique
-    while (true) {
-      const { data: existing } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('slug', slug)
-        .single();
-
-      if (!existing) break;
-      slug = `${baseSlug}-${counter}`;
-      counter++;
+    if (!existingProperty) {
+      return NextResponse.json({ error: 'Propiedad no encontrada' }, { status: 404 });
     }
 
-    // Determine submission status based on role
+    // Check permissions: Admin can edit any, others can only edit their own
     const isAdmin = profile.role === USER_ROLES.ADMIN;
-    const submissionStatus = isAdmin ? 'approved' : 'pending';
-    const isActive = isAdmin;
+    if (!isAdmin && existingProperty.submitted_by !== profile.id) {
+      return NextResponse.json({ error: 'No tienes permiso para editar esta propiedad' }, { status: 403 });
+    }
 
     // Normalizar property_type al valor del ENUM
     const normalizedPropertyType = PROPERTY_TYPE_MAP[data.property_type] || 'apartamento';
 
-    // Preparar agent_id - asegurarse de que es null si está vacío
+    // Preparar agent_id - solo admins pueden asignar agentes
     const agentId = isAdmin && data.agent_id && data.agent_id.trim() !== ''
       ? data.agent_id
       : null;
 
-    console.log('Creating property with data:', {
-      title: data.title,
-      property_type: normalizedPropertyType,
-      city: data.city,
-      price: data.price,
-      agent_id: agentId,
-      submitted_by: isAdmin ? null : profile.id,
-      submission_status: submissionStatus,
-    });
-
-    // Create property
+    // Update property
     const { data: property, error } = await supabase
       .from('properties')
-      .insert({
+      .update({
         title: data.title.trim(),
-        slug,
         description: data.description || null,
         property_type: normalizedPropertyType,
         status: data.status || 'venta',
@@ -126,26 +102,22 @@ export async function POST(request: NextRequest) {
         amenities: data.amenities || [],
         images: data.images || [],
         agent_id: agentId,
-        submitted_by: isAdmin ? null : profile.id,
-        submission_status: submissionStatus,
-        is_active: isActive,
-        is_featured: false,
-        views_count: 0,
+        updated_at: new Date().toISOString(),
       })
+      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating property:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('Error updating property:', error);
       return NextResponse.json({
-        error: `Error al crear la propiedad: ${error.message}`
+        error: `Error al actualizar la propiedad: ${error.message}`
       }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data: property });
   } catch (error) {
-    console.error('Error in create property API:', error);
+    console.error('Error in update property API:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
