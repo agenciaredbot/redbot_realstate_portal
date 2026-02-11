@@ -7,6 +7,9 @@ export function createClient() {
   );
 }
 
+// Alias for backwards compatibility
+export const createBrowserSupabaseClient = createClient;
+
 // Singleton instance for client-side usage
 let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 

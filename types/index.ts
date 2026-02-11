@@ -1,6 +1,9 @@
 // Property Types
 export * from './property';
 
+// Admin Panel Types
+export * from './admin';
+
 // Agent Types
 export * from './agent';
 
