@@ -25,7 +25,8 @@ export async function getAllProfiles(
     offset?: number;
   } = {}
 ) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('profiles')
@@ -68,7 +69,8 @@ export async function getAllProfiles(
  * Get profile by ID (admin only)
  */
 export async function getProfileById(id: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('profiles')
@@ -145,7 +147,8 @@ export async function linkProfileToAgent(profileId: string, agentId: string) {
  * Get notifications for current user
  */
 export async function getNotifications(userId: string, limit = 20) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('notifications')
@@ -166,7 +169,8 @@ export async function getNotifications(userId: string, limit = 20) {
  * Get unread notification count
  */
 export async function getUnreadNotificationCount(userId: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('notifications')
@@ -186,7 +190,8 @@ export async function getUnreadNotificationCount(userId: string) {
  * Mark notification as read
  */
 export async function markNotificationAsRead(notificationId: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('notifications')
@@ -200,7 +205,8 @@ export async function markNotificationAsRead(notificationId: string) {
  * Mark all notifications as read
  */
 export async function markAllNotificationsAsRead(userId: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('notifications')
@@ -285,7 +291,8 @@ export async function getAdminProperties(
  * Get pending properties count
  */
 export async function getPendingPropertiesCount() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('properties')
@@ -405,7 +412,8 @@ export async function getContactSubmissions(
     offset?: number;
   } = {}
 ) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('contact_submissions')
@@ -671,7 +679,8 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
  * Get all site settings
  */
 export async function getSiteSettings() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase.from('site_settings').select('*');
 
