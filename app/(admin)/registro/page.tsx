@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { signUp, signInWithGoogle } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -77,10 +76,26 @@ export default function RegisterPage() {
         return;
       }
 
+      // Verificar que la sesión se estableció correctamente
+      const supabase = getSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        console.error('[RegisterPage] Session not established after sign up');
+        setError('Error al establecer sesión. Intenta de nuevo.');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('[RegisterPage] Session verified, redirecting to dashboard');
+
+      // Pequeño delay para asegurar que las cookies y el trigger del profile se procesen
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Registration successful - redirect to dashboard using full page navigation
-      // This ensures cookies are properly sent with the next request
       window.location.href = '/admin/dashboard';
     } catch (err) {
+      console.error('[RegisterPage] Unexpected error:', err);
       setError('Ocurrió un error al crear la cuenta');
       setIsLoading(false);
     }

@@ -1,11 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
+  // Cliente regular para verificar autenticación (usa cookies)
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,9 +18,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -29,53 +27,74 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Get the current user
+  // Cliente admin para queries de profile (bypasea RLS)
+  // IMPORTANTE: Esta key solo se usa en el servidor, nunca se expone al cliente
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Obtener usuario autenticado
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  // Public auth routes that don't require authentication
-  const publicAuthRoutes = ['/login', '/registro'];
+  // Rutas públicas de autenticación
+  const publicAuthRoutes = ['/login', '/registro', '/forgot-password'];
   const isPublicAuthRoute = publicAuthRoutes.includes(pathname);
 
-  // Protect /admin routes
+  // Proteger rutas /admin
   if (pathname.startsWith('/admin')) {
     if (!user) {
-      // Redirect to login if not authenticated
+      // No autenticado - redirigir a login con URL de retorno
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // Get user profile to check role
-    const { data: profile, error: profileError } = await supabase
+    // Usar admin client para profile query (bypasea RLS)
+    // Esto evita el problema donde auth.uid() no está disponible en el servidor
+    let { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role, is_active')
       .eq('id', user.id)
       .single();
 
-    // If there's an error fetching profile (not just no rows), log it
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error('[Middleware] Error fetching profile:', profileError);
+    // Retry una vez si no existe (race condition de registro)
+    // El trigger que crea el profile puede no haber terminado aún
+    if (!profile) {
+      console.log('[Middleware] Profile not found, retrying after 300ms...');
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const retry = await supabaseAdmin
+        .from('profiles')
+        .select('role, is_active')
+        .eq('id', user.id)
+        .single();
+      profile = retry.data;
     }
 
-    // Only redirect to account_inactive if profile exists AND is_active is explicitly false
-    if (profile && profile.is_active === false) {
-      // User account is inactive - redirect to login with error
+    // Si aún no hay profile después del retry, redirigir con error
+    if (!profile) {
+      console.error(
+        '[Middleware] Profile not found after retry for user:',
+        user.id
+      );
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('error', 'profile_not_found');
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Verificar que la cuenta esté activa
+    if (profile.is_active === false) {
+      console.log('[Middleware] Account inactive for user:', user.id);
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('error', 'account_inactive');
       return NextResponse.redirect(loginUrl);
     }
 
-    // If profile doesn't exist yet, allow access (profile will be created by trigger)
-    if (!profile) {
-      console.log('[Middleware] Profile not found for user, allowing access');
-      return supabaseResponse;
-    }
-
-    // Role-based route protection
+    // Control de acceso basado en rol
     const adminOnlyRoutes = [
       '/admin/usuarios',
       '/admin/agentes',
@@ -83,31 +102,24 @@ export async function middleware(request: NextRequest) {
       '/admin/propiedades/pendientes',
     ];
 
-    const agentRoutes = [
-      '/admin/dashboard',
-      '/admin/propiedades',
-      '/admin/leads',
-      '/admin/perfil',
-    ];
-
-    // Admin (role 1) can access everything
+    // Admin (role 1) - acceso total
     if (profile.role === 1) {
       return supabaseResponse;
     }
 
-    // Agent (role 2) can access agent routes + some property routes
+    // Agent (role 2) - acceso limitado
     if (profile.role === 2) {
       const isAdminOnlyRoute = adminOnlyRoutes.some((route) =>
         pathname.startsWith(route)
       );
       if (isAdminOnlyRoute) {
-        // Redirect to dashboard if trying to access admin-only routes
+        // Redirigir a dashboard si intenta acceder a rutas de admin
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
       }
       return supabaseResponse;
     }
 
-    // User (role 3) can only access limited routes
+    // User (role 3) - acceso muy limitado
     if (profile.role === 3) {
       const userAllowedRoutes = [
         '/admin/dashboard',
@@ -127,7 +139,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect from login/registro if already authenticated
+  // Redirigir de login/registro si ya está autenticado
   if (isPublicAuthRoute && user) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }

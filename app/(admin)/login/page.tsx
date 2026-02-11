@@ -1,17 +1,17 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react';
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signInWithGoogle } = useAuth();
 
@@ -47,9 +47,23 @@ function LoginForm() {
         return;
       }
 
-      // Redirect to intended page using full page navigation
-      // This ensures cookies are properly sent with the next request
-      console.log('[LoginPage] Redirecting to:', redirectTo);
+      // Verificar que la sesión se estableció correctamente
+      const supabase = getSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        console.error('[LoginPage] Session not established after sign in');
+        setError('Error al establecer sesión. Intenta de nuevo.');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('[LoginPage] Session verified, redirecting to:', redirectTo);
+
+      // Pequeño delay para asegurar que las cookies se procesen completamente
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Redirect usando navegación completa para asegurar que cookies se envíen
       window.location.href = redirectTo;
     } catch (err) {
       console.error('[LoginPage] Unexpected error:', err);
@@ -76,11 +90,19 @@ function LoginForm() {
         </p>
       </div>
 
-      {/* Error messages */}
+      {/* Error messages from URL params */}
       {errorParam === 'account_inactive' && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-sm text-yellow-800">
             Tu cuenta está desactivada. Contacta al administrador.
+          </p>
+        </div>
+      )}
+
+      {errorParam === 'profile_not_found' && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">
+            Error al cargar tu perfil. Por favor intenta de nuevo o contacta soporte.
           </p>
         </div>
       )}

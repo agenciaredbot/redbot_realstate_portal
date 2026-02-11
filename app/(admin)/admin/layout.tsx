@@ -67,6 +67,20 @@ export default function AdminLayout({
     );
   }
 
+  // Profile loading/pending state
+  // Si el usuario está autenticado pero el profile aún no cargó,
+  // mostrar un estado de carga en lugar de romper la UI
+  if (!isLoading && isAuthenticated && !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-luxus-gold mx-auto" />
+          <p className="mt-2 text-sm text-gray-500">Configurando tu perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Note: Authentication is handled by middleware
   // We don't redirect here to avoid race conditions during hydration
   // If user is not authenticated, middleware will handle the redirect

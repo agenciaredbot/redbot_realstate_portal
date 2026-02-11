@@ -194,22 +194,57 @@ export function useAuth() {
   ) => {
     setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-        emailRedirectTo: `${window.location.origin}/login?verified=true`,
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/login?verified=true`,
+        },
+      });
 
-    setAuthState((prev) => ({ ...prev, isLoading: false }));
+      if (error) {
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        return { error };
+      }
 
-    if (error) {
-      return { error };
+      // Si el usuario se creó exitosamente, crear el profile explícitamente
+      // Esto es un backup del trigger de base de datos para evitar race conditions
+      if (data.user) {
+        console.log('[useAuth] User created, ensuring profile exists...');
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: data.user.id,
+              email: data.user.email!,
+              full_name: metadata?.full_name || '',
+              phone: metadata?.phone || null,
+              role: 3, // Default user role
+              is_active: true,
+            },
+            {
+              onConflict: 'id',
+              ignoreDuplicates: true,
+            }
+          );
+
+        if (profileError) {
+          console.error('[useAuth] Error creating profile (may already exist from trigger):', profileError.message);
+          // No retornamos error aquí porque el trigger puede haber creado el profile
+        } else {
+          console.log('[useAuth] Profile created/verified successfully');
+        }
+      }
+
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      return { data };
+    } catch (err) {
+      console.error('[useAuth] Unexpected error in signUp:', err);
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      return { error: { message: 'Error inesperado al crear la cuenta' } };
     }
-
-    return { data };
   };
 
   // Sign in with Google
