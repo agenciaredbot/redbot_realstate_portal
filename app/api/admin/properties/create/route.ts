@@ -3,6 +3,29 @@ import { getUserProfile } from '@/lib/supabase/auth';
 import { createAdminClient } from '@/lib/supabase/server';
 import { USER_ROLES } from '@/types/admin';
 
+// Mapeo de tipos de propiedad del formulario a valores del ENUM de PostgreSQL
+const PROPERTY_TYPE_MAP: Record<string, string> = {
+  'Apartamento': 'apartamento',
+  'Casa': 'casa',
+  'Oficina': 'oficina',
+  'Local Comercial': 'local',
+  'Bodega': 'bodega',
+  'Lote': 'lote',
+  'Finca': 'finca',
+  'Penthouse': 'apartamento',
+  'Estudio': 'apartamento',
+  'Consultorio': 'consultorio',
+  // Valores ya en minusculas (por si vienen asi)
+  'apartamento': 'apartamento',
+  'casa': 'casa',
+  'oficina': 'oficina',
+  'local': 'local',
+  'bodega': 'bodega',
+  'lote': 'lote',
+  'finca': 'finca',
+  'consultorio': 'consultorio',
+};
+
 // Helper to generate slug from title
 function generateSlug(title: string): string {
   return title
@@ -66,6 +89,9 @@ export async function POST(request: NextRequest) {
     const submissionStatus = isAdmin ? 'approved' : 'pending';
     const isActive = isAdmin;
 
+    // Normalizar property_type al valor del ENUM
+    const normalizedPropertyType = PROPERTY_TYPE_MAP[data.property_type] || 'apartamento';
+
     // Create property
     const { data: property, error } = await supabase
       .from('properties')
@@ -73,7 +99,7 @@ export async function POST(request: NextRequest) {
         title: data.title.trim(),
         slug,
         description: data.description || null,
-        property_type: data.property_type,
+        property_type: normalizedPropertyType,
         status: data.status || 'venta',
         price: data.price,
         city: data.city,
@@ -81,7 +107,7 @@ export async function POST(request: NextRequest) {
         address: data.address || null,
         bedrooms: data.bedrooms || 0,
         bathrooms: data.bathrooms || 0,
-        square_meters: data.square_meters || 0,
+        area_m2: data.square_meters || 0,
         amenities: data.amenities || [],
         agent_id: isAdmin && data.agent_id ? data.agent_id : null,
         submitted_by: isAdmin ? null : profile.id,

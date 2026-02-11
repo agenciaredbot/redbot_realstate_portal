@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from './server';
+import { createServerSupabaseClient, createAdminClient } from './server';
 import { createBrowserSupabaseClient } from './client';
 import type { Profile, UserRole, USER_ROLES } from '@/types/admin';
 
@@ -25,6 +25,7 @@ export async function getUser() {
 
 /**
  * Get the current user's profile with role
+ * Uses admin client to bypass RLS for reliable profile fetching
  */
 export async function getUserProfile(): Promise<Profile | null> {
   const supabase = await createServerSupabaseClient();
@@ -37,7 +38,9 @@ export async function getUserProfile(): Promise<Profile | null> {
     return null;
   }
 
-  const { data: profile, error } = await supabase
+  // Usar admin client para bypasear RLS (consistente con middleware y /api/auth/profile)
+  const adminClient = createAdminClient();
+  const { data: profile, error } = await adminClient
     .from('profiles')
     .select('*')
     .eq('id', user.id)

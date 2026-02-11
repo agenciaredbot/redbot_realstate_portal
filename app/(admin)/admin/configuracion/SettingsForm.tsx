@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   Mail,
@@ -13,6 +13,7 @@ import {
   Save,
   Settings,
   Palette,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,78 +24,128 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function SettingsForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
   // Form state
   const [generalSettings, setGeneralSettings] = useState({
-    site_name: 'Redbot Real Estate',
-    site_description: 'Portal inmobiliario líder en Colombia',
-    contact_email: 'info@redbot-realestate.com',
-    contact_phone: '+57 300 123 4567',
-    whatsapp: '+57 300 123 4567',
-    address: 'Calle 100 #15-20, Bogotá, Colombia',
+    site_name: '',
+    site_description: '',
+    contact_email: '',
+    contact_phone: '',
+    whatsapp: '',
+    address: '',
   });
 
   const [socialSettings, setSocialSettings] = useState({
-    facebook: 'https://facebook.com/redbotrealestate',
-    instagram: 'https://instagram.com/redbotrealestate',
-    twitter: 'https://twitter.com/redbotrealestate',
+    facebook: '',
+    instagram: '',
+    twitter: '',
     linkedin: '',
     youtube: '',
   });
 
   const [seoSettings, setSeoSettings] = useState({
-    meta_title: 'Redbot Real Estate - Propiedades en Colombia',
-    meta_description: 'Encuentra las mejores propiedades en venta y arriendo en Colombia. Apartamentos, casas, oficinas y más.',
-    meta_keywords: 'propiedades, inmuebles, colombia, venta, arriendo, apartamentos, casas',
+    meta_title: '',
+    meta_description: '',
+    meta_keywords: '',
     google_analytics: '',
   });
 
-  const handleSaveGeneral = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fetch settings on mount
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/admin/settings');
+        if (res.ok) {
+          const { settings } = await res.json();
+
+          // Populate general settings
+          setGeneralSettings({
+            site_name: settings.site_name || 'Redbot Real Estate',
+            site_description: settings.site_description || 'Portal inmobiliario lider en Colombia',
+            contact_email: settings.contact_email || 'info@redbot-realestate.com',
+            contact_phone: settings.contact_phone || '+57 300 123 4567',
+            whatsapp: settings.whatsapp || '+57 300 123 4567',
+            address: settings.address || 'Calle 100 #15-20, Bogota, Colombia',
+          });
+
+          // Populate social settings
+          setSocialSettings({
+            facebook: settings.facebook || '',
+            instagram: settings.instagram || '',
+            twitter: settings.twitter || '',
+            linkedin: settings.linkedin || '',
+            youtube: settings.youtube || '',
+          });
+
+          // Populate SEO settings
+          setSeoSettings({
+            meta_title: settings.meta_title || 'Redbot Real Estate - Propiedades en Colombia',
+            meta_description: settings.meta_description || 'Encuentra las mejores propiedades en venta y arriendo en Colombia.',
+            meta_keywords: settings.meta_keywords || 'propiedades, inmuebles, colombia, venta, arriendo',
+            google_analytics: settings.google_analytics || '',
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching settings:', err);
+      } finally {
+        setIsFetching(false);
+      }
+    }
+
+    fetchSettings();
+  }, []);
+
+  const saveSettings = async (settingsToSave: Record<string, string>) => {
     setIsLoading(true);
     setSuccess('');
+    setError('');
 
     try {
-      // TODO: Implement API call to save settings
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('Configuración guardada correctamente');
-    } catch (error) {
-      console.error('Error saving settings:', error);
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: settingsToSave }),
+      });
+
+      if (res.ok) {
+        setSuccess('Configuracion guardada correctamente');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Error al guardar configuracion');
+      }
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setError('Error de conexion');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSaveGeneral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveSettings(generalSettings);
   };
 
   const handleSaveSocial = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setSuccess('');
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('Redes sociales guardadas correctamente');
-    } catch (error) {
-      console.error('Error saving social settings:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    await saveSettings(socialSettings);
   };
 
   const handleSaveSeo = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setSuccess('');
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('Configuración SEO guardada correctamente');
-    } catch (error) {
-      console.error('Error saving SEO settings:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    await saveSettings(seoSettings);
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
     <Tabs defaultValue="general" className="space-y-6">
@@ -120,13 +171,20 @@ export function SettingsForm() {
         </div>
       )}
 
+      {/* Error Message */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* General Settings */}
       <TabsContent value="general">
         <Card>
           <CardHeader>
-            <CardTitle>Información General</CardTitle>
+            <CardTitle>Informacion General</CardTitle>
             <CardDescription>
-              Configura la información básica del portal
+              Configura la informacion basica del portal
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -175,7 +233,7 @@ export function SettingsForm() {
                   <Label htmlFor="contact_phone">
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-gray-400" />
-                      Teléfono
+                      Telefono
                     </div>
                   </Label>
                   <Input
@@ -213,7 +271,7 @@ export function SettingsForm() {
                   <Label htmlFor="address">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />
-                      Dirección
+                      Direccion
                     </div>
                   </Label>
                   <Input
@@ -229,7 +287,7 @@ export function SettingsForm() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="site_description">Descripción del Sitio</Label>
+                  <Label htmlFor="site_description">Descripcion del Sitio</Label>
                   <Textarea
                     id="site_description"
                     value={generalSettings.site_description}
@@ -246,7 +304,11 @@ export function SettingsForm() {
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>
@@ -354,7 +416,11 @@ export function SettingsForm() {
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>
@@ -367,16 +433,16 @@ export function SettingsForm() {
       <TabsContent value="seo">
         <Card>
           <CardHeader>
-            <CardTitle>Configuración SEO</CardTitle>
+            <CardTitle>Configuracion SEO</CardTitle>
             <CardDescription>
-              Optimiza tu sitio para motores de búsqueda
+              Optimiza tu sitio para motores de busqueda
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSaveSeo} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="meta_title">Título Meta (SEO)</Label>
+                  <Label htmlFor="meta_title">Titulo Meta (SEO)</Label>
                   <Input
                     id="meta_title"
                     value={seoSettings.meta_title}
@@ -393,7 +459,7 @@ export function SettingsForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="meta_description">Descripción Meta (SEO)</Label>
+                  <Label htmlFor="meta_description">Descripcion Meta (SEO)</Label>
                   <Textarea
                     id="meta_description"
                     value={seoSettings.meta_description}
@@ -447,7 +513,11 @@ export function SettingsForm() {
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   {isLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>

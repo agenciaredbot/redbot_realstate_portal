@@ -22,6 +22,7 @@ export interface PropertyImage {
 
 export interface Property {
   id: string;
+  reference_code?: string; // Human-readable code (e.g., RB-0001)
   slug: string;
   title: string;
   description_short?: string;
@@ -85,6 +86,7 @@ export interface PropertyFilters {
   amenities?: string[];
   is_featured?: boolean;
   search?: string;
+  reference_code?: string; // Search by reference code (e.g., RB-0001)
 }
 
 export interface PropertyListResponse {

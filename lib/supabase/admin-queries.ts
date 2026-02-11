@@ -227,13 +227,14 @@ export async function getAdminProperties(
     offset?: number;
   } = {}
 ) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS (la validación de permisos se hace en la página)
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('properties')
     .select(
       `
-      id, title, slug, status, property_type, price, city,
+      id, reference_code, title, slug, status, property_type, price, city,
       is_active, is_featured, submitted_by, submission_status,
       rejection_reason, agent_id, created_at, updated_at,
       submitter:profiles!submitted_by(id, full_name, email, avatar_url),

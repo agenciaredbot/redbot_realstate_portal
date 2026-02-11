@@ -29,36 +29,41 @@ export function useAuth() {
     isAgent: false,
   });
 
-  // Fetch user profile
+  // Fetch user profile via API route (bypasses RLS issues)
   const fetchProfile = useCallback(
     async (userId: string): Promise<Profile | null> => {
       try {
-        console.log('[useAuth] Fetching profile for user:', userId);
+        console.log('[useAuth] Fetching profile via API for user:', userId);
 
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
+        const response = await fetch('/api/auth/profile', {
+          method: 'GET',
+          credentials: 'include', // Include cookies for auth
+        });
 
-        if (error) {
-          // PGRST116 means no rows returned - profile doesn't exist yet
-          if (error.code === 'PGRST116') {
-            console.log('[useAuth] Profile not found for user, may need to create one');
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.log('[useAuth] Not authenticated when fetching profile');
             return null;
           }
-          console.error('[useAuth] Error fetching profile:', error.message, error.code);
+          console.error('[useAuth] API error:', response.status);
           return null;
         }
 
-        console.log('[useAuth] Profile fetched successfully:', profile?.email);
-        return profile as Profile;
+        const data = await response.json();
+
+        if (!data.profile) {
+          console.log('[useAuth] Profile not found for user, may need to create one');
+          return null;
+        }
+
+        console.log('[useAuth] Profile fetched successfully:', data.profile?.email);
+        return data.profile as Profile;
       } catch (err) {
-        console.error('[useAuth] Unexpected error fetching profile:', err);
+        console.error('[useAuth] Error fetching profile:', err);
         return null;
       }
     },
-    [supabase]
+    []
   );
 
   // Initialize auth state
