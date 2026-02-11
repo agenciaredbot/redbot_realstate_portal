@@ -139,7 +139,8 @@ export async function getRecentProperties(limit = 9) {
 // =====================================================
 
 export async function getAgents() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('agents')
