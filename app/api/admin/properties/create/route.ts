@@ -92,6 +92,21 @@ export async function POST(request: NextRequest) {
     // Normalizar property_type al valor del ENUM
     const normalizedPropertyType = PROPERTY_TYPE_MAP[data.property_type] || 'apartamento';
 
+    // Preparar agent_id - asegurarse de que es null si está vacío
+    const agentId = isAdmin && data.agent_id && data.agent_id.trim() !== ''
+      ? data.agent_id
+      : null;
+
+    console.log('Creating property with data:', {
+      title: data.title,
+      property_type: normalizedPropertyType,
+      city: data.city,
+      price: data.price,
+      agent_id: agentId,
+      submitted_by: isAdmin ? null : profile.id,
+      submission_status: submissionStatus,
+    });
+
     // Create property
     const { data: property, error } = await supabase
       .from('properties')
@@ -109,7 +124,7 @@ export async function POST(request: NextRequest) {
         bathrooms: data.bathrooms || 0,
         area_m2: data.square_meters || 0,
         amenities: data.amenities || [],
-        agent_id: isAdmin && data.agent_id ? data.agent_id : null,
+        agent_id: agentId,
         submitted_by: isAdmin ? null : profile.id,
         submission_status: submissionStatus,
         is_active: isActive,
@@ -121,7 +136,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating property:', error);
-      return NextResponse.json({ error: 'Error al crear la propiedad' }, { status: 500 });
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      return NextResponse.json({
+        error: `Error al crear la propiedad: ${error.message}`
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data: property });

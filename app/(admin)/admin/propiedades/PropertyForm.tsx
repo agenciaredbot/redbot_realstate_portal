@@ -139,7 +139,9 @@ export function PropertyForm({
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Para agent_id, convertir "none" a string vacío
+    const actualValue = name === 'agent_id' && value === 'none' ? '' : value;
+    setFormData((prev) => ({ ...prev, [name]: actualValue }));
     setError('');
   };
 
@@ -469,14 +471,14 @@ export function PropertyForm({
           </CardHeader>
           <CardContent>
             <Select
-              value={formData.agent_id}
+              value={formData.agent_id || 'none'}
               onValueChange={(v) => handleSelectChange('agent_id', v)}
             >
               <SelectTrigger className="w-full md:w-[300px]">
                 <SelectValue placeholder="Seleccionar agente..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sin asignar</SelectItem>
+                <SelectItem value="none">Sin asignar</SelectItem>
                 {agents.map((agent) => (
                   <SelectItem key={agent.id} value={agent.id}>
                     {agent.first_name} {agent.last_name}
