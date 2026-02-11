@@ -36,27 +36,43 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Protect /admin routes (except /admin/login)
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+  // Public auth routes that don't require authentication
+  const publicAuthRoutes = ['/login', '/registro'];
+  const isPublicAuthRoute = publicAuthRoutes.includes(pathname);
+
+  // Protect /admin routes
+  if (pathname.startsWith('/admin')) {
     if (!user) {
       // Redirect to login if not authenticated
-      const loginUrl = new URL('/admin/login', request.url);
+      const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
     // Get user profile to check role
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, is_active')
       .eq('id', user.id)
       .single();
 
-    if (!profile || !profile.is_active) {
-      // User profile not found or inactive - redirect to login
-      const loginUrl = new URL('/admin/login', request.url);
+    // If there's an error fetching profile (not just no rows), log it
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('[Middleware] Error fetching profile:', profileError);
+    }
+
+    // Only redirect to account_inactive if profile exists AND is_active is explicitly false
+    if (profile && profile.is_active === false) {
+      // User account is inactive - redirect to login with error
+      const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('error', 'account_inactive');
       return NextResponse.redirect(loginUrl);
+    }
+
+    // If profile doesn't exist yet, allow access (profile will be created by trigger)
+    if (!profile) {
+      console.log('[Middleware] Profile not found for user, allowing access');
+      return supabaseResponse;
     }
 
     // Role-based route protection
@@ -111,8 +127,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect from /admin/login if already authenticated
-  if (pathname === '/admin/login' && user) {
+  // Redirect from login/registro if already authenticated
+  if (isPublicAuthRoute && user) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }
 

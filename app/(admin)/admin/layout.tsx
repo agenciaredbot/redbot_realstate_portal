@@ -52,7 +52,7 @@ export default function AdminLayout({
   // Handle sign out
   const handleSignOut = async () => {
     await signOut();
-    router.push('/admin/login');
+    router.push('/login');
   };
 
   // Loading state
@@ -67,11 +67,9 @@ export default function AdminLayout({
     );
   }
 
-  // Not authenticated - middleware should handle this, but just in case
-  if (!isAuthenticated) {
-    router.push('/admin/login');
-    return null;
-  }
+  // Note: Authentication is handled by middleware
+  // We don't redirect here to avoid race conditions during hydration
+  // If user is not authenticated, middleware will handle the redirect
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/types/admin';
 
@@ -17,7 +17,8 @@ interface AuthState {
 
 export function useAuth() {
   const router = useRouter();
-  const supabase = createBrowserSupabaseClient();
+  // Use singleton client to maintain session across renders
+  const supabase = useMemo(() => getSupabaseClient(), []);
 
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -30,19 +31,32 @@ export function useAuth() {
 
   // Fetch user profile
   const fetchProfile = useCallback(
-    async (userId: string) => {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    async (userId: string): Promise<Profile | null> => {
+      try {
+        console.log('[useAuth] Fetching profile for user:', userId);
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          // PGRST116 means no rows returned - profile doesn't exist yet
+          if (error.code === 'PGRST116') {
+            console.log('[useAuth] Profile not found for user, may need to create one');
+            return null;
+          }
+          console.error('[useAuth] Error fetching profile:', error.message, error.code);
+          return null;
+        }
+
+        console.log('[useAuth] Profile fetched successfully:', profile?.email);
+        return profile as Profile;
+      } catch (err) {
+        console.error('[useAuth] Unexpected error fetching profile:', err);
         return null;
       }
-
-      return profile as Profile;
     },
     [supabase]
   );
@@ -77,7 +91,14 @@ export function useAuth() {
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        setAuthState({
+          user: null,
+          profile: null,
+          isLoading: false,
+          isAuthenticated: false,
+          isAdmin: false,
+          isAgent: false,
+        });
       }
     };
 
@@ -116,35 +137,92 @@ export function useAuth() {
 
   // Sign in
   const signIn = async (email: string, password: string) => {
+    console.log('[useAuth] Starting sign in for:', email);
     setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('[useAuth] Sign in error:', error.message);
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        return { error };
+      }
+
+      console.log('[useAuth] Sign in successful, user:', data.user?.id);
+
+      if (data.user) {
+        const profile = await fetchProfile(data.user.id);
+        console.log('[useAuth] Profile result:', profile ? 'found' : 'not found', 'is_active:', profile?.is_active);
+
+        // Only check is_active if profile exists AND is explicitly false
+        if (profile && profile.is_active === false) {
+          console.log('[useAuth] Account is inactive, signing out');
+          await supabase.auth.signOut();
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          return { error: { message: 'Tu cuenta está desactivada' } };
+        }
+
+        setAuthState({
+          user: data.user,
+          profile,
+          isLoading: false,
+          isAuthenticated: true,
+          isAdmin: profile?.role === 1,
+          isAgent: profile?.role === 2 || profile?.role === 1,
+        });
+
+        console.log('[useAuth] Auth state updated, isAuthenticated: true');
+      }
+
+      return { data };
+    } catch (err) {
+      console.error('[useAuth] Unexpected sign in error:', err);
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      return { error: { message: 'Error inesperado al iniciar sesión' } };
+    }
+  };
+
+  // Sign up
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata?: { full_name?: string; phone?: string }
+  ) => {
+    setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: metadata,
+        emailRedirectTo: `${window.location.origin}/login?verified=true`,
+      },
     });
 
+    setAuthState((prev) => ({ ...prev, isLoading: false }));
+
     if (error) {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
       return { error };
     }
 
-    if (data.user) {
-      const profile = await fetchProfile(data.user.id);
+    return { data };
+  };
 
-      if (!profile?.is_active) {
-        await supabase.auth.signOut();
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
-        return { error: { message: 'Tu cuenta está desactivada' } };
-      }
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/admin/dashboard`,
+      },
+    });
 
-      setAuthState({
-        user: data.user,
-        profile,
-        isLoading: false,
-        isAuthenticated: true,
-        isAdmin: profile?.role === 1,
-        isAgent: profile?.role === 2 || profile?.role === 1,
-      });
+    if (error) {
+      return { error };
     }
 
     return { data };
@@ -154,7 +232,7 @@ export function useAuth() {
   const signOut = async () => {
     setAuthState((prev) => ({ ...prev, isLoading: true }));
     await supabase.auth.signOut();
-    router.push('/admin/login');
+    router.push('/login');
   };
 
   // Refresh profile
@@ -173,6 +251,8 @@ export function useAuth() {
   return {
     ...authState,
     signIn,
+    signUp,
+    signInWithGoogle,
     signOut,
     refreshProfile,
   };
@@ -185,7 +265,7 @@ export function useRequireRole(requiredRole: 1 | 2 | 3) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/admin/login');
+      router.push('/login');
       return;
     }
 
