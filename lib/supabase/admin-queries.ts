@@ -495,7 +495,8 @@ export async function assignSubmissionToAgent(submissionId: string, agentId: str
  * Get admin dashboard stats
  */
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   // Total properties
   const { count: totalProperties } = await supabase
@@ -572,7 +573,8 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
  * Get agent dashboard stats
  */
 export async function getAgentDashboardStats(agentId: string): Promise<AgentDashboardStats> {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   // Assigned properties
   const { count: assignedProperties } = await supabase
@@ -620,7 +622,8 @@ export async function getAgentDashboardStats(agentId: string): Promise<AgentDash
  * Get user dashboard stats
  */
 export async function getUserDashboardStats(userId: string): Promise<UserDashboardStats> {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS
+  const supabase = createAdminClient();
 
   // Published properties
   const { count: publishedProperties } = await supabase
