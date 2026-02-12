@@ -16,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BlogCard } from '@/components/blog/BlogCard';
+import { MarkdownContent } from '@/components/blog/MarkdownContent';
 import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
@@ -160,13 +161,11 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Content */}
           <div className="bg-white rounded-xl shadow-luxus p-6 md:p-10 mb-8">
-            <div className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
-              {post.content ? (
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
-              ) : (
-                <p className="text-luxus-gray">{post.excerpt}</p>
-              )}
-            </div>
+            {post.content ? (
+              <MarkdownContent content={post.content} />
+            ) : (
+              <p className="text-luxus-gray">{post.excerpt}</p>
+            )}
           </div>
 
           {/* Tags */}

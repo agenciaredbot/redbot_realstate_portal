@@ -6,6 +6,7 @@ import { Calendar, User, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { BlogPost } from '@/types';
 import { cn } from '@/lib/utils';
+import { stripMarkdown } from '@/components/blog/MarkdownContent';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -64,8 +65,8 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
               </h3>
             </Link>
 
-            <p className="text-luxus-gray mb-4 line-clamp-3">
-              {post.excerpt}
+            <p className="text-luxus-gray mb-4 line-clamp-3 break-words">
+              {stripMarkdown(post.excerpt)}
             </p>
 
             <Link
@@ -119,8 +120,8 @@ export function BlogCard({ post, className, variant = 'default' }: BlogCardProps
         </Link>
 
         {/* Excerpt */}
-        <p className="text-sm text-luxus-gray mb-4 line-clamp-2">
-          {post.excerpt}
+        <p className="text-sm text-luxus-gray mb-4 line-clamp-2 break-words">
+          {stripMarkdown(post.excerpt)}
         </p>
 
         {/* Author & Read More */}

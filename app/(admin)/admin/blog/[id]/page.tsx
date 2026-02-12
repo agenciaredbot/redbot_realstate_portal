@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BlogPostActions } from './BlogPostActions';
+import { MarkdownContent } from '@/components/blog/MarkdownContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -153,10 +154,7 @@ export default async function BlogDetailPage({
             </CardHeader>
             <CardContent>
               {post.content ? (
-                <div
-                  className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+                <MarkdownContent content={post.content} />
               ) : (
                 <p className="text-gray-400 italic">Sin contenido</p>
               )}
