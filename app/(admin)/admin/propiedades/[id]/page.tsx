@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PropertyActions } from './PropertyActions';
+import { CopyLinkButtons } from './CopyLinkButtons';
 
 export const dynamic = 'force-dynamic';
 
@@ -370,7 +371,7 @@ export default async function PropertyDetailPage({
 
           {/* Actions */}
           <Card>
-            <CardContent className="pt-6 space-y-2">
+            <CardContent className="pt-6 space-y-4">
               <Button asChild className="w-full" variant="outline">
                 <Link href={`/admin/propiedades/${property.id}/editar`}>
                   <Edit className="h-4 w-4 mr-2" />
@@ -384,6 +385,14 @@ export default async function PropertyDetailPage({
                     Ver en Portal
                   </Link>
                 </Button>
+              )}
+
+              {/* Copy Links */}
+              {property.slug && (
+                <div className="pt-2 border-t">
+                  <p className="text-sm text-gray-500 mb-2">Compartir propiedad</p>
+                  <CopyLinkButtons slug={property.slug} />
+                </div>
               )}
             </CardContent>
           </Card>
