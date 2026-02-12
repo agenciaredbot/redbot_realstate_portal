@@ -14,7 +14,8 @@ export async function getProperties(filters?: PropertyFilters) {
       *,
       agent:agents(id, slug, first_name, last_name, photo_url, phone, email)
     `)
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   // Apply filters
   if (filters?.status) {
@@ -81,6 +82,7 @@ export async function getPropertyBySlug(slug: string) {
     `)
     .eq('slug', slug)
     .eq('is_active', true)
+    .eq('submission_status', 'approved')
     .single();
 
   if (error) {
@@ -101,6 +103,7 @@ export async function getFeaturedProperties(limit = 6) {
       agent:agents(id, slug, first_name, last_name, photo_url)
     `)
     .eq('is_active', true)
+    .eq('submission_status', 'approved')
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -123,6 +126,7 @@ export async function getRecentProperties(limit = 9) {
       agent:agents(id, slug, first_name, last_name, photo_url)
     `)
     .eq('is_active', true)
+    .eq('submission_status', 'approved')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -196,6 +200,7 @@ export async function getAgentWithProperties(slug: string) {
     .select('*')
     .eq('agent_id', agent.id)
     .eq('is_active', true)
+    .eq('submission_status', 'approved')
     .order('created_at', { ascending: false });
 
   if (propertiesError) {
@@ -306,7 +311,8 @@ export async function getAllPropertySlugs() {
   const { data, error } = await supabase
     .from('properties')
     .select('slug')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   if (error) {
     console.error('Error fetching property slugs:', error);
@@ -344,7 +350,8 @@ export async function getCities() {
   const { data, error } = await supabase
     .from('properties')
     .select('city')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   if (error) {
     console.error('Error fetching cities:', error);
@@ -362,7 +369,8 @@ export async function getPropertyTypes() {
   const { data, error } = await supabase
     .from('properties')
     .select('property_type')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   if (error) {
     console.error('Error fetching property types:', error);
@@ -380,7 +388,8 @@ export async function getPropertiesCount() {
   const { count, error } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   if (error) {
     console.error('Error fetching properties count:', error);
@@ -416,7 +425,8 @@ export async function getPropertyCategoriesWithCounts() {
   const { data, error } = await supabase
     .from('properties')
     .select('property_type')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('submission_status', 'approved');
 
   if (error) {
     console.error('Error fetching property categories:', error);
