@@ -16,10 +16,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { getBlogPostBySlug, getRelatedBlogPosts, getAllBlogPostSlugs } from '@/lib/sanity/queries';
-import { adaptSanityBlogPost, adaptSanityBlogPosts } from '@/lib/sanity/adapters';
-import PortableText from '@/components/sanity/PortableText';
-import { urlFor } from '@/lib/sanity/client';
+import {
+  getBlogPostBySlug,
+  getRelatedBlogPosts,
+  getAllBlogPostSlugs,
+} from '@/lib/supabase/blog-queries';
+import type { BlogPost } from '@/types';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,6 +38,29 @@ function formatDate(dateString: string): string {
   });
 }
 
+// Adapter to convert BlogPostDB to BlogPost for components
+function adaptBlogPost(post: any): BlogPost {
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || '',
+    content: post.content || '',
+    featured_image: post.featured_image || '/images/placeholder-blog.jpg',
+    author_name: post.author_name || 'Redbot Real Estate',
+    author_avatar: post.author_avatar,
+    category: post.category || '',
+    tags: post.tags || [],
+    meta_title: post.meta_title,
+    meta_description: post.meta_description,
+    is_published: post.is_published,
+    published_at: post.published_at || post.created_at,
+    views_count: post.views_count || 0,
+    created_at: post.created_at,
+    updated_at: post.updated_at,
+  };
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const rawPost = await getBlogPostBySlug(slug);
@@ -44,11 +71,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const post = adaptSanityBlogPost(rawPost);
+  const post = adaptBlogPost(rawPost);
 
   return {
-    title: `${post.title} | Blog Redbot Real Estate`,
-    description: post.excerpt,
+    title: post.meta_title || `${post.title} | Blog Redbot Real Estate`,
+    description: post.meta_description || post.excerpt,
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -68,25 +95,13 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const post = adaptSanityBlogPost(rawPost);
-  // Keep the raw Portable Text content for rendering
-  const portableTextContent = rawPost.content;
+  const post = adaptBlogPost(rawPost);
 
   // Get related posts (same category, excluding current post)
   const rawRelatedPosts = post.category
-    ? await getRelatedBlogPosts(post.category, slug, 3)
+    ? await getRelatedBlogPosts(post.category, post.id, 3)
     : [];
-  const relatedPosts = adaptSanityBlogPosts(rawRelatedPosts);
-
-  // Featured image URL
-  const featuredImageUrl = rawPost.featuredImage?.asset
-    ? urlFor(rawPost.featuredImage).width(1200).height(675).url()
-    : post.featured_image;
-
-  // Author avatar URL
-  const authorAvatarUrl = rawPost.authorAvatar?.asset
-    ? urlFor(rawPost.authorAvatar).width(200).url()
-    : post.author_avatar;
+  const relatedPosts = rawRelatedPosts.map(adaptBlogPost);
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-20">
@@ -106,9 +121,11 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="max-w-4xl mx-auto">
           {/* Category & Meta */}
           <div className="mb-6">
-            <Badge className="bg-luxus-gold text-white border-0 mb-4">
-              {post.category}
-            </Badge>
+            {post.category && (
+              <Badge className="bg-luxus-gold text-white border-0 mb-4">
+                {post.category}
+              </Badge>
+            )}
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-luxus-dark font-heading mb-4">
               {post.title}
             </h1>
@@ -129,21 +146,23 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
 
           {/* Featured Image */}
-          <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-8">
-            <Image
-              src={featuredImageUrl}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          {post.featured_image && (
+            <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-8">
+              <Image
+                src={post.featured_image}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
 
-          {/* Content - Now renders Portable Text from Sanity */}
+          {/* Content */}
           <div className="bg-white rounded-xl shadow-luxus p-6 md:p-10 mb-8">
             <div className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-luxus-dark prose-p:text-luxus-gray prose-a:text-luxus-gold prose-strong:text-luxus-dark">
-              {portableTextContent && Array.isArray(portableTextContent) ? (
-                <PortableText value={portableTextContent} />
+              {post.content ? (
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
               ) : (
                 <p className="text-luxus-gray">{post.excerpt}</p>
               )}
@@ -197,10 +216,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Author Box */}
           <div className="bg-white rounded-xl shadow-luxus p-6 mb-8">
             <div className="flex items-start gap-4">
-              {authorAvatarUrl && (
+              {post.author_avatar && (
                 <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={authorAvatarUrl}
+                    src={post.author_avatar}
                     alt={post.author_name}
                     fill
                     className="object-cover"
@@ -263,11 +282,4 @@ export default async function BlogPostPage({ params }: PageProps) {
       </article>
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  const slugs = await getAllBlogPostSlugs();
-  return slugs.map((p: { slug: string }) => ({
-    slug: p.slug,
-  }));
 }

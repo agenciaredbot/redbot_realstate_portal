@@ -9,8 +9,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BlogCard } from '@/components/blog/BlogCard';
-import { getBlogPosts, getBlogCategories } from '@/lib/sanity/queries';
-import { adaptSanityBlogPosts } from '@/lib/sanity/adapters';
+import { getPublishedBlogPosts, getUsedBlogCategories, getFeaturedBlogPosts } from '@/lib/supabase/blog-queries';
+import type { BlogPost } from '@/types';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Blog | Redbot Real Estate',
@@ -18,16 +20,46 @@ export const metadata: Metadata = {
     'Noticias, consejos y guias del mercado inmobiliario colombiano. Mantente informado con Redbot Real Estate.',
 };
 
+// Adapter to convert BlogPostDB to BlogPost for the BlogCard component
+function adaptBlogPost(post: any): BlogPost {
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || '',
+    content: post.content || '',
+    featured_image: post.featured_image || '/images/placeholder-blog.jpg',
+    author_name: post.author_name || 'Redbot Real Estate',
+    author_avatar: post.author_avatar,
+    category: post.category || '',
+    tags: post.tags || [],
+    meta_title: post.meta_title,
+    meta_description: post.meta_description,
+    is_published: post.is_published,
+    published_at: post.published_at || post.created_at,
+    views_count: post.views_count || 0,
+    created_at: post.created_at,
+    updated_at: post.updated_at,
+  };
+}
+
 export default async function BlogPage() {
-  const [sanityPosts, categories] = await Promise.all([
-    getBlogPosts(100),
-    getBlogCategories(),
+  const [posts, featuredPosts, categories] = await Promise.all([
+    getPublishedBlogPosts(100),
+    getFeaturedBlogPosts(1),
+    getUsedBlogCategories(),
   ]);
 
-  const sortedPosts = adaptSanityBlogPosts(sanityPosts);
+  // Adapt posts for the BlogCard component
+  const adaptedPosts = posts.map(adaptBlogPost);
 
-  const featuredPost = sortedPosts[0];
-  const otherPosts = sortedPosts.slice(1);
+  // Use featured post if available, otherwise use the first post
+  const featuredPost = featuredPosts.length > 0
+    ? adaptBlogPost(featuredPosts[0])
+    : adaptedPosts[0];
+
+  // Filter out the featured post from the list
+  const otherPosts = adaptedPosts.filter(post => post.id !== featuredPost?.id);
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-24 pb-16">
@@ -103,7 +135,7 @@ export default async function BlogPage() {
         )}
 
         {/* Empty State */}
-        {sortedPosts.length === 0 && (
+        {adaptedPosts.length === 0 && (
           <div className="text-center py-16">
             <p className="text-luxus-gray">
               No hay articulos disponibles en este momento.
@@ -112,7 +144,7 @@ export default async function BlogPage() {
         )}
 
         {/* Pagination (simplified for now) */}
-        {sortedPosts.length > 6 && (
+        {adaptedPosts.length > 6 && (
           <div className="mt-12 flex justify-center">
             <div className="flex items-center gap-2">
               <button className="px-4 py-2 rounded-lg border border-luxus-gray-light text-luxus-gray hover:border-luxus-gold hover:text-luxus-gold transition-colors">

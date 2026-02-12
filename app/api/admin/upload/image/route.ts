@@ -6,6 +6,9 @@ import { createAdminClient } from '@/lib/supabase/server';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Allowed buckets
+const ALLOWED_BUCKETS = ['property-images', 'blog-images'];
+
 export async function POST(request: NextRequest) {
   try {
     const profile = await getUserProfile();
@@ -16,9 +19,18 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const bucket = (formData.get('bucket') as string) || 'property-images';
 
     if (!file) {
       return NextResponse.json({ error: 'No se proporcionó archivo' }, { status: 400 });
+    }
+
+    // Validate bucket
+    if (!ALLOWED_BUCKETS.includes(bucket)) {
+      return NextResponse.json(
+        { error: 'Bucket no permitido' },
+        { status: 400 }
+      );
     }
 
     // Validate file type
@@ -42,7 +54,10 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-    const filePath = `properties/${fileName}`;
+
+    // Set folder based on bucket
+    const folder = bucket === 'blog-images' ? 'posts' : 'properties';
+    const filePath = `${folder}/${fileName}`;
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -50,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
-      .from('property-images')
+      .from(bucket)
       .upload(filePath, buffer, {
         contentType: file.type,
         cacheControl: '3600',
@@ -67,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('property-images')
+      .from(bucket)
       .getPublicUrl(filePath);
 
     return NextResponse.json({

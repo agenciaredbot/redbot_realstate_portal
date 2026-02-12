@@ -7,6 +7,9 @@ export * from './admin';
 // Agent Types
 export * from './agent';
 
+// Blog Types
+export * from './blog';
+
 // Contact Form Types
 export interface ContactSubmission {
   id: string;
