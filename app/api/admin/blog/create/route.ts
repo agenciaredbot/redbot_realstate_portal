@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       excerpt: body.excerpt?.trim() || null,
       content: body.content || null,
       featured_image: body.featured_image || null,
-      author_id: profile.id,
+      author_id: null, // Evitar FK constraint issues - usar author_name/author_avatar
       author_name: profile.full_name || profile.email,
       author_avatar: profile.avatar_url || null,
       category: body.category || null,
@@ -84,8 +84,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating blog post:', error);
+    const errorMessage = error instanceof Error
+      ? error.message
+      : 'Error desconocido al crear el post';
     return NextResponse.json(
-      { error: 'Error al crear el post' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
