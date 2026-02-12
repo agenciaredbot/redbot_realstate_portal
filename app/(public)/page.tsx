@@ -24,6 +24,9 @@ import {
   adaptSanityServices,
 } from '@/lib/sanity/adapters';
 
+// Make page dynamic so property changes (active/inactive) reflect immediately
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   // Fetch data from Supabase (properties, agents, categories) and Sanity (blog, testimonials, services) in parallel
   const [featuredProperties, recentProperties, agents, sanityTestimonials, sanityBlogPosts, categories, sanityServices] =

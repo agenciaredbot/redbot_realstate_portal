@@ -2,6 +2,9 @@ import { Suspense } from 'react';
 import { PropiedadesContent } from './PropiedadesContent';
 import { getProperties, getAgents, getCities } from '@/lib/supabase/queries';
 
+// Make page dynamic so property changes (active/inactive) reflect immediately
+export const dynamic = 'force-dynamic';
+
 // Loading skeleton for Suspense fallback
 function PropiedadesLoading() {
   return (
