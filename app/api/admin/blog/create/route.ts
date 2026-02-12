@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare post data
+    // Note: author_id column does not exist in DB, using author_name/author_avatar instead
     const postData = {
       title: body.title.trim(),
       slug,
       excerpt: body.excerpt?.trim() || null,
       content: body.content || null,
       featured_image: body.featured_image || null,
-      author_id: null, // Evitar FK constraint issues - usar author_name/author_avatar
       author_name: profile.full_name || profile.email,
       author_avatar: profile.avatar_url || null,
       category: body.category || null,
