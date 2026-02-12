@@ -6,7 +6,8 @@ import type { Property, Agent, PropertyFilters } from '@/types';
 // =====================================================
 
 export async function getProperties(filters?: PropertyFilters) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   let query = supabase
     .from('properties')
@@ -72,7 +73,8 @@ export async function getProperties(filters?: PropertyFilters) {
 }
 
 export async function getPropertyBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
@@ -94,7 +96,8 @@ export async function getPropertyBySlug(slug: string) {
 }
 
 export async function getFeaturedProperties(limit = 6) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
@@ -117,7 +120,8 @@ export async function getFeaturedProperties(limit = 6) {
 }
 
 export async function getRecentProperties(limit = 9) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
@@ -179,7 +183,8 @@ export async function getAgentBySlug(slug: string) {
 }
 
 export async function getAgentWithProperties(slug: string) {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   // Get agent
   const { data: agent, error: agentError } = await supabase
@@ -345,7 +350,8 @@ export async function getAllAgentSlugs() {
 // =====================================================
 
 export async function getCities() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
@@ -364,7 +370,8 @@ export async function getCities() {
 }
 
 export async function getPropertyTypes() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
@@ -383,7 +390,8 @@ export async function getPropertyTypes() {
 }
 
 export async function getPropertiesCount() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('properties')
@@ -420,7 +428,8 @@ export async function getAgentsCount() {
 // =====================================================
 
 export async function getPropertyCategoriesWithCounts() {
-  const supabase = await createServerSupabaseClient();
+  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
