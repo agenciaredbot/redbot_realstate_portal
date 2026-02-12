@@ -14,13 +14,15 @@ import {
   getPropertyCategoriesWithCounts,
 } from '@/lib/supabase/queries';
 import {
+  getPublishedBlogPosts,
+  adaptBlogPostsDBToPublic,
+} from '@/lib/supabase/blog-queries';
+import {
   getTestimonials as getSanityTestimonials,
-  getBlogPosts as getSanityBlogPosts,
   getServices as getSanityServices,
 } from '@/lib/sanity/queries';
 import {
   adaptSanityTestimonials,
-  adaptSanityBlogPosts,
   adaptSanityServices,
 } from '@/lib/sanity/adapters';
 
@@ -28,21 +30,21 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  // Fetch data from Supabase (properties, agents, categories) and Sanity (blog, testimonials, services) in parallel
-  const [featuredProperties, recentProperties, agents, sanityTestimonials, sanityBlogPosts, categories, sanityServices] =
+  // Fetch data from Supabase (properties, agents, categories, blog) and Sanity (testimonials, services) in parallel
+  const [featuredProperties, recentProperties, agents, sanityTestimonials, supabaseBlogPosts, categories, sanityServices] =
     await Promise.all([
       getFeaturedProperties(6),
       getRecentProperties(9),
       getAgents(),
       getSanityTestimonials(10),
-      getSanityBlogPosts(3),
+      getPublishedBlogPosts(3),
       getPropertyCategoriesWithCounts(),
       getSanityServices(),
     ]);
 
-  // Adapt Sanity data to match existing TypeScript types
+  // Adapt data to match existing TypeScript types
   const testimonials = adaptSanityTestimonials(sanityTestimonials);
-  const blogPosts = adaptSanityBlogPosts(sanityBlogPosts);
+  const blogPosts = adaptBlogPostsDBToPublic(supabaseBlogPosts);
   const services = adaptSanityServices(sanityServices);
 
   // Create agents map for property cards

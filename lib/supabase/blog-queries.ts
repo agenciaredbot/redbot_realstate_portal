@@ -1,5 +1,6 @@
 import { createAdminClient } from './server';
 import type { BlogPostDB, BlogCategory, BlogFilters, BlogStats } from '@/types/blog';
+import type { BlogPost } from '@/types';
 
 // =====================================================
 // BLOG POSTS QUERIES
@@ -476,4 +477,39 @@ export async function checkSlugExists(slug: string, excludeId?: string): Promise
   const { data } = await query.single();
 
   return !!data;
+}
+
+// =====================================================
+// ADAPTERS
+// =====================================================
+
+/**
+ * Adapter: Convert BlogPostDB to BlogPost for public display
+ */
+export function adaptBlogPostDBToPublic(post: BlogPostDB): BlogPost {
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || '',
+    content: post.content || '',
+    featured_image: post.featured_image && !post.featured_image.includes('placeholder')
+      ? post.featured_image
+      : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop',
+    author_name: post.author_name || 'Redbot Real Estate',
+    author_avatar: post.author_avatar || undefined,
+    category: post.category || 'General',
+    tags: post.tags || [],
+    meta_title: post.meta_title || undefined,
+    meta_description: post.meta_description || undefined,
+    is_published: post.is_published,
+    published_at: post.published_at || post.created_at,
+    views_count: post.views_count,
+    created_at: post.created_at,
+    updated_at: post.updated_at,
+  };
+}
+
+export function adaptBlogPostsDBToPublic(posts: BlogPostDB[]): BlogPost[] {
+  return posts.map(adaptBlogPostDBToPublic);
 }
