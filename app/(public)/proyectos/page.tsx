@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import { Building2, Filter } from 'lucide-react';
 import { ProjectCard } from '@/components/project/ProjectCard';
-import { getProjects } from '@/lib/sanity/queries';
-import { adaptSanityProjects } from '@/lib/sanity/adapters';
+import { getActiveProjects, getProjectCities, adaptProjectsDBToPublic } from '@/lib/supabase/project-queries';
 import {
   Select,
   SelectContent,
@@ -11,6 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Proyectos Inmobiliarios | Redbot Real Estate',
   description:
@@ -18,8 +19,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ProyectosPage() {
-  const sanityProjects = await getProjects();
-  const projects = adaptSanityProjects(sanityProjects);
+  const [projectsDB, cities] = await Promise.all([
+    getActiveProjects(50),
+    getProjectCities(),
+  ]);
+
+  const projects = adaptProjectsDBToPublic(projectsDB);
 
   return (
     <div className="min-h-screen bg-luxus-cream pt-24 pb-16">
@@ -70,7 +75,7 @@ export default async function ProyectosPage() {
                 <SelectContent>
                   <SelectItem value="all">Todos los estados</SelectItem>
                   <SelectItem value="preventa">Preventa</SelectItem>
-                  <SelectItem value="construccion">En Construcción</SelectItem>
+                  <SelectItem value="construccion">En Construccion</SelectItem>
                   <SelectItem value="entrega">Entrega Inmediata</SelectItem>
                 </SelectContent>
               </Select>
@@ -95,9 +100,11 @@ export default async function ProyectosPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas las ciudades</SelectItem>
-                  <SelectItem value="bogota">Bogotá</SelectItem>
-                  <SelectItem value="medellin">Medellín</SelectItem>
-                  <SelectItem value="cartagena">Cartagena</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city.toLowerCase()}>
+                      {city}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -127,12 +134,12 @@ export default async function ProyectosPage() {
         <div className="mt-16 bg-white rounded-xl shadow-luxus p-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl font-bold text-luxus-dark font-heading mb-4">
-              ¿Por qué invertir en proyectos sobre planos?
+              ¿Por que invertir en proyectos sobre planos?
             </h2>
             <p className="text-luxus-gray mb-6">
-              Comprar en preventa o durante la construcción ofrece múltiples
-              beneficios: precios más bajos, planes de pago flexibles,
-              personalización de acabados y valorización garantizada.
+              Comprar en preventa o durante la construccion ofrece multiples
+              beneficios: precios mas bajos, planes de pago flexibles,
+              personalizacion de acabados y valorizacion garantizada.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
               <div className="text-center">
@@ -156,7 +163,7 @@ export default async function ProyectosPage() {
                   <span className="text-2xl font-bold text-luxus-gold">+25%</span>
                 </div>
                 <p className="text-sm text-luxus-gray">
-                  Valorización potencial
+                  Valorizacion potencial
                 </p>
               </div>
             </div>

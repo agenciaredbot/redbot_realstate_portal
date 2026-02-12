@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProjectBySlug, getAllProjectSlugs } from '@/lib/sanity/queries';
-import { adaptSanityProject } from '@/lib/sanity/adapters';
+import { getProjectBySlug, getAllProjectSlugs, adaptProjectDBToPublic } from '@/lib/supabase/project-queries';
 import { ProjectDetailContent } from './ProjectDetailContent';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const project = adaptSanityProject(rawProject);
+  const project = adaptProjectDBToPublic(rawProject);
 
   return {
     title: `${project.title} | Redbot Real Estate`,
@@ -39,14 +40,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const project = adaptSanityProject(rawProject);
+  const project = adaptProjectDBToPublic(rawProject);
 
   return <ProjectDetailContent project={project} />;
 }
 
 export async function generateStaticParams() {
   const slugs = await getAllProjectSlugs();
-  return slugs.map((p: { slug: string }) => ({
-    slug: p.slug,
+  return slugs.map((slug: string) => ({
+    slug,
   }));
 }
