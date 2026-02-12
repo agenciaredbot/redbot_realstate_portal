@@ -13,10 +13,7 @@ export async function getBlogPosts(filters?: BlogFilters): Promise<BlogPostDB[]>
 
   let query = supabase
     .from('blog_posts')
-    .select(`
-      *,
-      author:profiles!blog_posts_author_id_fkey(id, full_name, avatar_url)
-    `)
+    .select('*')
     .order('created_at', { ascending: false });
 
   // Apply filters
@@ -105,10 +102,7 @@ export async function getBlogPostById(id: string): Promise<BlogPostDB | null> {
 
   const { data, error } = await supabase
     .from('blog_posts')
-    .select(`
-      *,
-      author:profiles!blog_posts_author_id_fkey(id, full_name, avatar_url)
-    `)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -217,7 +211,7 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
   const { data, error } = await supabase
     .from('blog_categories')
     .select('*')
-    .order('order_index', { ascending: true });
+    .order('name', { ascending: true });
 
   if (error) {
     console.error('Error fetching blog categories:', error);
