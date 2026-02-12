@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { getPropertyBySlug, getAllPropertySlugs } from '@/lib/supabase/queries';
+import { getPropertyBySlug } from '@/lib/supabase/queries';
 import { PropertyGallery } from '@/components/property/PropertyGallery';
 import { PropertyHeader } from '@/components/property/PropertyHeader';
 import { PropertyOverview } from '@/components/property/PropertyOverview';
@@ -11,18 +11,13 @@ import { ContactAgentForm } from '@/components/property/ContactAgentForm';
 import { formatPriceCOP } from '@/lib/format';
 import { PROPERTY_TYPE_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/constants';
 
+// Make page dynamic so new properties are available immediately without rebuild
+export const dynamic = 'force-dynamic';
+
 interface PropertyDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
-}
-
-// Generate static params for all properties
-export async function generateStaticParams() {
-  const slugs = await getAllPropertySlugs();
-  return slugs.map((item) => ({
-    slug: item.slug,
-  }));
 }
 
 // Generate metadata for SEO
