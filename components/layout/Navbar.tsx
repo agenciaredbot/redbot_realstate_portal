@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,8 +15,13 @@ import {
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { MAIN_NAV_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import type { Tenant } from '@/types/tenant';
 
-export function Navbar() {
+interface NavbarProps {
+  tenant?: Tenant;
+}
+
+export function Navbar({ tenant }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -32,6 +38,12 @@ export function Navbar() {
 
   const isHomePage = pathname === '/';
 
+  // Get company name and logo from tenant
+  const companyName = tenant?.company_name || tenant?.name || 'REDBOT';
+  const companyInitial = companyName.charAt(0).toUpperCase();
+  const logoUrl = isScrolled || !isHomePage ? tenant?.logo_url : tenant?.logo_dark_url || tenant?.logo_url;
+  const primaryColor = tenant?.primary_color || '#C9A962';
+
   return (
     <header
       className={cn(
@@ -45,35 +57,49 @@ export function Navbar() {
         <nav className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group/logo">
-            <div
-              className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover/logo:scale-110',
-                isScrolled || !isHomePage
-                  ? 'bg-luxus-gold'
-                  : 'bg-white'
-              )}
-            >
-              <span
-                className={cn(
-                  'text-xl font-bold',
-                  isScrolled || !isHomePage
-                    ? 'text-white'
-                    : 'text-luxus-gold'
-                )}
-              >
-                R
-              </span>
-            </div>
-            <span
-              className={cn(
-                'text-xl font-bold hidden sm:block transition-colors duration-300',
-                isScrolled || !isHomePage
-                  ? 'text-luxus-dark group-hover/logo:text-luxus-gold'
-                  : 'text-white group-hover/logo:text-luxus-gold-light'
-              )}
-            >
-              REDBOT
-            </span>
+            {logoUrl ? (
+              <Image
+                src={logoUrl}
+                alt={companyName}
+                width={120}
+                height={40}
+                className="h-10 w-auto object-contain transition-transform duration-300 group-hover/logo:scale-105"
+              />
+            ) : (
+              <>
+                <div
+                  className={cn(
+                    'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover/logo:scale-110',
+                    isScrolled || !isHomePage
+                      ? 'bg-luxus-gold'
+                      : 'bg-white'
+                  )}
+                  style={isScrolled || !isHomePage ? { backgroundColor: primaryColor } : {}}
+                >
+                  <span
+                    className={cn(
+                      'text-xl font-bold',
+                      isScrolled || !isHomePage
+                        ? 'text-white'
+                        : 'text-luxus-gold'
+                    )}
+                    style={!(isScrolled || !isHomePage) ? { color: primaryColor } : {}}
+                  >
+                    {companyInitial}
+                  </span>
+                </div>
+                <span
+                  className={cn(
+                    'text-xl font-bold hidden sm:block transition-colors duration-300',
+                    isScrolled || !isHomePage
+                      ? 'text-luxus-dark group-hover/logo:text-luxus-gold'
+                      : 'text-white group-hover/logo:text-luxus-gold-light'
+                  )}
+                >
+                  {companyName.toUpperCase()}
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Navigation */}
@@ -163,12 +189,29 @@ export function Navbar() {
                       className="flex items-center gap-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <div className="w-10 h-10 rounded-full bg-luxus-gold flex items-center justify-center">
-                        <span className="text-xl font-bold text-white">R</span>
-                      </div>
-                      <span className="text-xl font-bold text-luxus-dark">
-                        REDBOT
-                      </span>
+                      {tenant?.logo_url ? (
+                        <Image
+                          src={tenant.logo_url}
+                          alt={companyName}
+                          width={100}
+                          height={36}
+                          className="h-9 w-auto object-contain"
+                        />
+                      ) : (
+                        <>
+                          <div
+                            className="w-10 h-10 rounded-full bg-luxus-gold flex items-center justify-center"
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            <span className="text-xl font-bold text-white">
+                              {companyInitial}
+                            </span>
+                          </div>
+                          <span className="text-xl font-bold text-luxus-dark">
+                            {companyName.toUpperCase()}
+                          </span>
+                        </>
+                      )}
                     </Link>
                     <SheetClose asChild>
                       <Button variant="ghost" size="icon">

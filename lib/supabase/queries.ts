@@ -1,12 +1,13 @@
 import { createServerSupabaseClient, createAdminClient } from './server';
+import { getCurrentTenantId, insertWithTenant } from './tenant-queries';
 import type { Property, Agent, PropertyFilters } from '@/types';
 
 // =====================================================
-// PROPERTIES QUERIES
+// PROPERTIES QUERIES (Multi-tenant)
 // =====================================================
 
-export async function getProperties(filters?: PropertyFilters) {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getProperties(filters?: PropertyFilters, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
@@ -15,6 +16,7 @@ export async function getProperties(filters?: PropertyFilters) {
       *,
       agent:agents(id, slug, first_name, last_name, photo_url, phone, email)
     `)
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -72,8 +74,8 @@ export async function getProperties(filters?: PropertyFilters) {
   return data || [];
 }
 
-export async function getPropertyBySlug(slug: string) {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getPropertyBySlug(slug: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -82,6 +84,7 @@ export async function getPropertyBySlug(slug: string) {
       *,
       agent:agents(*)
     `)
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug)
     .eq('is_active', true)
     .eq('submission_status', 'approved')
@@ -95,8 +98,8 @@ export async function getPropertyBySlug(slug: string) {
   return data;
 }
 
-export async function getFeaturedProperties(limit = 6) {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getFeaturedProperties(limit = 6, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -105,6 +108,7 @@ export async function getFeaturedProperties(limit = 6) {
       *,
       agent:agents(id, slug, first_name, last_name, photo_url)
     `)
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved')
     .eq('is_featured', true)
@@ -119,8 +123,8 @@ export async function getFeaturedProperties(limit = 6) {
   return data || [];
 }
 
-export async function getRecentProperties(limit = 9) {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getRecentProperties(limit = 9, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -129,6 +133,7 @@ export async function getRecentProperties(limit = 9) {
       *,
       agent:agents(id, slug, first_name, last_name, photo_url)
     `)
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved')
     .order('created_at', { ascending: false })
@@ -143,16 +148,17 @@ export async function getRecentProperties(limit = 9) {
 }
 
 // =====================================================
-// AGENTS QUERIES
+// AGENTS QUERIES (Multi-tenant)
 // =====================================================
 
-export async function getAgents() {
-  // Usar admin client para bypasear RLS
+export async function getAgents(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('agents')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .order('first_name', { ascending: true });
 
@@ -164,12 +170,14 @@ export async function getAgents() {
   return data || [];
 }
 
-export async function getAgentBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
+export async function getAgentBySlug(slug: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('agents')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -182,14 +190,15 @@ export async function getAgentBySlug(slug: string) {
   return data;
 }
 
-export async function getAgentWithProperties(slug: string) {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getAgentWithProperties(slug: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get agent
   const { data: agent, error: agentError } = await supabase
     .from('agents')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -203,6 +212,7 @@ export async function getAgentWithProperties(slug: string) {
   const { data: properties, error: propertiesError } = await supabase
     .from('properties')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('agent_id', agent.id)
     .eq('is_active', true)
     .eq('submission_status', 'approved')
@@ -224,7 +234,7 @@ export async function getAgentWithProperties(slug: string) {
 // =====================================================
 
 // =====================================================
-// CONTACT SUBMISSIONS
+// CONTACT SUBMISSIONS (Multi-tenant)
 // =====================================================
 
 export async function createContactSubmission(data: {
@@ -237,13 +247,14 @@ export async function createContactSubmission(data: {
   propertyId?: string;
   agentId?: string;
   source?: string;
-}) {
-  // Use admin client to bypass RLS for insert
+}, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data: submission, error } = await supabase
     .from('contact_submissions')
     .insert({
+      tenant_id: currentTenantId,
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
@@ -266,15 +277,17 @@ export async function createContactSubmission(data: {
 }
 
 // =====================================================
-// SITE SETTINGS
+// SITE SETTINGS (Multi-tenant)
 // =====================================================
 
-export async function getSiteSetting(key: string) {
-  const supabase = await createServerSupabaseClient();
+export async function getSiteSetting(key: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('site_settings')
     .select('value')
+    .eq('tenant_id', currentTenantId)
     .eq('key', key)
     .single();
 
@@ -286,12 +299,14 @@ export async function getSiteSetting(key: string) {
   return data?.value;
 }
 
-export async function getAllSiteSettings() {
-  const supabase = await createServerSupabaseClient();
+export async function getAllSiteSettings(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('site_settings')
-    .select('key, value');
+    .select('key, value')
+    .eq('tenant_id', currentTenantId);
 
   if (error) {
     console.error('Error fetching site settings:', error);
@@ -307,7 +322,8 @@ export async function getAllSiteSettings() {
 
 // =====================================================
 // STATIC GENERATION QUERIES (for generateStaticParams)
-// These use admin client to avoid cookies dependency
+// These use admin client and return data for ALL tenants
+// Static generation happens at build time for all slugs
 // =====================================================
 
 export async function getAllPropertySlugs() {
@@ -315,7 +331,7 @@ export async function getAllPropertySlugs() {
 
   const { data, error } = await supabase
     .from('properties')
-    .select('slug')
+    .select('slug, tenant_id')
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -332,7 +348,7 @@ export async function getAllAgentSlugs() {
 
   const { data, error } = await supabase
     .from('agents')
-    .select('slug')
+    .select('slug, tenant_id')
     .eq('is_active', true);
 
   if (error) {
@@ -346,16 +362,17 @@ export async function getAllAgentSlugs() {
 // Blog/Project slugs → Moved to Sanity CMS (lib/sanity/queries.ts)
 
 // =====================================================
-// UTILITY FUNCTIONS
+// UTILITY FUNCTIONS (Multi-tenant)
 // =====================================================
 
-export async function getCities() {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getCities(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .select('city')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -369,13 +386,14 @@ export async function getCities() {
   return cities.sort();
 }
 
-export async function getPropertyTypes() {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getPropertyTypes(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .select('property_type')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -389,13 +407,14 @@ export async function getPropertyTypes() {
   return types;
 }
 
-export async function getPropertiesCount() {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getPropertiesCount(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -407,12 +426,14 @@ export async function getPropertiesCount() {
   return count || 0;
 }
 
-export async function getAgentsCount() {
-  const supabase = await createServerSupabaseClient();
+export async function getAgentsCount(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('agents')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true);
 
   if (error) {
@@ -424,16 +445,17 @@ export async function getAgentsCount() {
 }
 
 // =====================================================
-// PROPERTY CATEGORIES (for homepage)
+// PROPERTY CATEGORIES (for homepage) - Multi-tenant
 // =====================================================
 
-export async function getPropertyCategoriesWithCounts() {
-  // Usar admin client para bypasear RLS - los filtros manuales garantizan seguridad
+export async function getPropertyCategoriesWithCounts(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .select('property_type')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 

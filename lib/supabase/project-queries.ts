@@ -1,4 +1,5 @@
 import { createAdminClient } from './server';
+import { getCurrentTenantId } from './tenant-queries';
 import type { ProjectDB, ProjectFilters, ProjectStats } from '@/types/project-db';
 import type { Project, ProjectImage } from '@/types/project';
 
@@ -105,18 +106,20 @@ export function adaptProjectsDBToPublic(projects: ProjectDB[]): Project[] {
 }
 
 // =====================================================
-// READ OPERATIONS
+// READ OPERATIONS (Multi-tenant)
 // =====================================================
 
 /**
  * Get all projects with optional filters
  */
-export async function getProjects(filters?: ProjectFilters): Promise<ProjectDB[]> {
+export async function getProjects(filters?: ProjectFilters, tenantId?: string): Promise<ProjectDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
     .from('projects')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false });
 
   // Apply filters
@@ -161,12 +164,14 @@ export async function getProjects(filters?: ProjectFilters): Promise<ProjectDB[]
 /**
  * Get active projects for public pages
  */
-export async function getActiveProjects(limit = 20): Promise<ProjectDB[]> {
+export async function getActiveProjects(limit = 20, tenantId?: string): Promise<ProjectDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -182,12 +187,14 @@ export async function getActiveProjects(limit = 20): Promise<ProjectDB[]> {
 /**
  * Get featured projects
  */
-export async function getFeaturedProjects(limit = 4): Promise<ProjectDB[]> {
+export async function getFeaturedProjects(limit = 4, tenantId?: string): Promise<ProjectDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
@@ -204,12 +211,14 @@ export async function getFeaturedProjects(limit = 4): Promise<ProjectDB[]> {
 /**
  * Get a single project by ID
  */
-export async function getProjectById(id: string): Promise<ProjectDB | null> {
+export async function getProjectById(id: string, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -224,12 +233,14 @@ export async function getProjectById(id: string): Promise<ProjectDB | null> {
 /**
  * Get a single project by slug
  */
-export async function getProjectBySlug(slug: string): Promise<ProjectDB | null> {
+export async function getProjectBySlug(slug: string, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug)
     .single();
 
@@ -243,13 +254,14 @@ export async function getProjectBySlug(slug: string): Promise<ProjectDB | null> 
 
 /**
  * Get all project slugs for static generation
+ * Returns data for ALL tenants (used at build time)
  */
-export async function getAllProjectSlugs(): Promise<string[]> {
+export async function getAllProjectSlugs(): Promise<{ slug: string; tenant_id: string }[]> {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
-    .select('slug')
+    .select('slug, tenant_id')
     .eq('is_active', true);
 
   if (error) {
@@ -257,13 +269,14 @@ export async function getAllProjectSlugs(): Promise<string[]> {
     return [];
   }
 
-  return (data || []).map((p) => p.slug);
+  return data || [];
 }
 
 /**
  * Get project statistics
  */
-export async function getProjectStats(): Promise<ProjectStats> {
+export async function getProjectStats(tenantId?: string): Promise<ProjectStats> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const [
@@ -275,13 +288,13 @@ export async function getProjectStats(): Promise<ProjectStats> {
     entregaResult,
     vendidoResult,
   ] = await Promise.all([
-    supabase.from('projects').select('id', { count: 'exact', head: true }),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('is_featured', true),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('status', 'preventa'),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('status', 'en_construccion'),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('status', 'entrega_inmediata'),
-    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('status', 'vendido'),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('is_active', true),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('is_featured', true),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('status', 'preventa'),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('status', 'en_construccion'),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('status', 'entrega_inmediata'),
+    supabase.from('projects').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('status', 'vendido'),
   ]);
 
   return {
@@ -296,14 +309,16 @@ export async function getProjectStats(): Promise<ProjectStats> {
 }
 
 /**
- * Check if a slug already exists
+ * Check if a slug already exists (within tenant)
  */
-export async function checkProjectSlugExists(slug: string, excludeId?: string): Promise<boolean> {
+export async function checkProjectSlugExists(slug: string, excludeId?: string, tenantId?: string): Promise<boolean> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
     .from('projects')
     .select('id')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug);
 
   if (excludeId) {
@@ -318,12 +333,14 @@ export async function checkProjectSlugExists(slug: string, excludeId?: string): 
 /**
  * Get unique cities from projects
  */
-export async function getProjectCities(): Promise<string[]> {
+export async function getProjectCities(tenantId?: string): Promise<string[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('projects')
     .select('city')
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true);
 
   if (error) {
@@ -336,13 +353,14 @@ export async function getProjectCities(): Promise<string[]> {
 }
 
 // =====================================================
-// WRITE OPERATIONS (Admin)
+// WRITE OPERATIONS (Admin - Multi-tenant)
 // =====================================================
 
 /**
  * Create a new project
  */
-export async function createProject(data: Partial<ProjectDB>): Promise<ProjectDB | null> {
+export async function createProject(data: Partial<ProjectDB>, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Generate slug if not provided
@@ -350,9 +368,15 @@ export async function createProject(data: Partial<ProjectDB>): Promise<ProjectDB
     data.slug = generateProjectSlug(data.name);
   }
 
+  // Add tenant_id
+  const projectData = {
+    ...data,
+    tenant_id: currentTenantId,
+  };
+
   const { data: project, error } = await supabase
     .from('projects')
-    .insert(data)
+    .insert(projectData)
     .select()
     .single();
 
@@ -367,12 +391,14 @@ export async function createProject(data: Partial<ProjectDB>): Promise<ProjectDB
 /**
  * Update a project
  */
-export async function updateProject(id: string, data: Partial<ProjectDB>): Promise<ProjectDB | null> {
+export async function updateProject(id: string, data: Partial<ProjectDB>, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data: project, error } = await supabase
     .from('projects')
     .update(data)
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();
@@ -388,12 +414,14 @@ export async function updateProject(id: string, data: Partial<ProjectDB>): Promi
 /**
  * Delete a project
  */
-export async function deleteProject(id: string): Promise<boolean> {
+export async function deleteProject(id: string, tenantId?: string): Promise<boolean> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('projects')
     .delete()
+    .eq('tenant_id', currentTenantId)
     .eq('id', id);
 
   if (error) {
@@ -407,13 +435,15 @@ export async function deleteProject(id: string): Promise<boolean> {
 /**
  * Toggle project featured status
  */
-export async function toggleProjectFeatured(id: string): Promise<ProjectDB | null> {
+export async function toggleProjectFeatured(id: string, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get current status
   const { data: current } = await supabase
     .from('projects')
     .select('is_featured')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -424,6 +454,7 @@ export async function toggleProjectFeatured(id: string): Promise<ProjectDB | nul
   const { data: project, error } = await supabase
     .from('projects')
     .update({ is_featured: !current.is_featured })
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();
@@ -439,13 +470,15 @@ export async function toggleProjectFeatured(id: string): Promise<ProjectDB | nul
 /**
  * Toggle project active status
  */
-export async function toggleProjectActive(id: string): Promise<ProjectDB | null> {
+export async function toggleProjectActive(id: string, tenantId?: string): Promise<ProjectDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get current status
   const { data: current } = await supabase
     .from('projects')
     .select('is_active')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -456,6 +489,7 @@ export async function toggleProjectActive(id: string): Promise<ProjectDB | null>
   const { data: project, error } = await supabase
     .from('projects')
     .update({ is_active: !current.is_active })
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();

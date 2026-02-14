@@ -1,4 +1,5 @@
 import { createServerSupabaseClient, createAdminClient } from './server';
+import { getCurrentTenantId } from './tenant-queries';
 import type {
   Profile,
   Notification,
@@ -11,11 +12,11 @@ import type {
 } from '@/types/admin';
 
 // =====================================================
-// PROFILE QUERIES
+// PROFILE QUERIES (Multi-tenant)
 // =====================================================
 
 /**
- * Get all profiles (admin only)
+ * Get all profiles for the current tenant (admin only)
  */
 export async function getAllProfiles(
   options: {
@@ -23,9 +24,10 @@ export async function getAllProfiles(
     isActive?: boolean;
     limit?: number;
     offset?: number;
-  } = {}
+  } = {},
+  tenantId?: string
 ) {
-  // Usar admin client para bypasear RLS
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
@@ -37,6 +39,7 @@ export async function getAllProfiles(
     `,
       { count: 'exact' }
     )
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false });
 
   if (options.role) {
@@ -66,10 +69,10 @@ export async function getAllProfiles(
 }
 
 /**
- * Get profile by ID (admin only)
+ * Get profile by ID (validates tenant access)
  */
-export async function getProfileById(id: string) {
-  // Usar admin client para bypasear RLS
+export async function getProfileById(id: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -81,6 +84,7 @@ export async function getProfileById(id: string) {
     `
     )
     .eq('id', id)
+    .eq('tenant_id', currentTenantId)
     .single();
 
   if (error) {
@@ -92,15 +96,17 @@ export async function getProfileById(id: string) {
 }
 
 /**
- * Update profile role (admin only)
+ * Update profile role (validates tenant access)
  */
-export async function updateProfileRole(id: string, role: UserRole) {
+export async function updateProfileRole(id: string, role: UserRole, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('profiles')
     .update({ role })
     .eq('id', id)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -108,15 +114,17 @@ export async function updateProfileRole(id: string, role: UserRole) {
 }
 
 /**
- * Deactivate/Activate profile (admin only)
+ * Deactivate/Activate profile (validates tenant access)
  */
-export async function toggleProfileActive(id: string, isActive: boolean) {
+export async function toggleProfileActive(id: string, isActive: boolean, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('profiles')
     .update({ is_active: isActive })
     .eq('id', id)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -124,15 +132,17 @@ export async function toggleProfileActive(id: string, isActive: boolean) {
 }
 
 /**
- * Link profile to agent (admin only)
+ * Link profile to agent (validates tenant access)
  */
-export async function linkProfileToAgent(profileId: string, agentId: string) {
+export async function linkProfileToAgent(profileId: string, agentId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('profiles')
     .update({ agent_id: agentId, role: 2 }) // Role 2 = Agent
     .eq('id', profileId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -140,20 +150,21 @@ export async function linkProfileToAgent(profileId: string, agentId: string) {
 }
 
 // =====================================================
-// NOTIFICATION QUERIES
+// NOTIFICATION QUERIES (Multi-tenant)
 // =====================================================
 
 /**
- * Get notifications for current user
+ * Get notifications for current user (within tenant)
  */
-export async function getNotifications(userId: string, limit = 20) {
-  // Usar admin client para bypasear RLS
+export async function getNotifications(userId: string, limit = 20, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
     .eq('user_id', userId)
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -168,14 +179,15 @@ export async function getNotifications(userId: string, limit = 20) {
 /**
  * Get unread notification count
  */
-export async function getUnreadNotificationCount(userId: string) {
-  // Usar admin client para bypasear RLS
+export async function getUnreadNotificationCount(userId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
+    .eq('tenant_id', currentTenantId)
     .eq('is_read', false);
 
   if (error) {
@@ -189,14 +201,15 @@ export async function getUnreadNotificationCount(userId: string) {
 /**
  * Mark notification as read
  */
-export async function markNotificationAsRead(notificationId: string) {
-  // Usar admin client para bypasear RLS
+export async function markNotificationAsRead(notificationId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true })
-    .eq('id', notificationId);
+    .eq('id', notificationId)
+    .eq('tenant_id', currentTenantId);
 
   return { error };
 }
@@ -204,21 +217,22 @@ export async function markNotificationAsRead(notificationId: string) {
 /**
  * Mark all notifications as read
  */
-export async function markAllNotificationsAsRead(userId: string) {
-  // Usar admin client para bypasear RLS
+export async function markAllNotificationsAsRead(userId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true })
     .eq('user_id', userId)
+    .eq('tenant_id', currentTenantId)
     .eq('is_read', false);
 
   return { error };
 }
 
 // =====================================================
-// PROPERTY QUERIES (Admin)
+// PROPERTY QUERIES (Admin - Multi-tenant)
 // =====================================================
 
 /**
@@ -231,9 +245,10 @@ export async function getAdminProperties(
     agentId?: string;
     limit?: number;
     offset?: number;
-  } = {}
+  } = {},
+  tenantId?: string
 ) {
-  // Usar admin client para bypasear RLS (la validación de permisos se hace en la página)
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
@@ -248,6 +263,7 @@ export async function getAdminProperties(
     `,
       { count: 'exact' }
     )
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false });
 
   if (options.submissionStatus) {
@@ -288,15 +304,16 @@ export async function getAdminProperties(
 }
 
 /**
- * Get pending properties count
+ * Get pending properties count for tenant
  */
-export async function getPendingPropertiesCount() {
-  // Usar admin client para bypasear RLS
+export async function getPendingPropertiesCount(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { count, error } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('submission_status', 'pending');
 
   if (error) {
@@ -308,9 +325,10 @@ export async function getPendingPropertiesCount() {
 }
 
 /**
- * Approve property
+ * Approve property (validates tenant access)
  */
-export async function approveProperty(propertyId: string) {
+export async function approveProperty(propertyId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -321,6 +339,7 @@ export async function approveProperty(propertyId: string) {
       rejection_reason: null,
     })
     .eq('id', propertyId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -328,9 +347,10 @@ export async function approveProperty(propertyId: string) {
 }
 
 /**
- * Reject property
+ * Reject property (validates tenant access)
  */
-export async function rejectProperty(propertyId: string, reason: string) {
+export async function rejectProperty(propertyId: string, reason: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -341,6 +361,7 @@ export async function rejectProperty(propertyId: string, reason: string) {
       rejection_reason: reason,
     })
     .eq('id', propertyId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -348,15 +369,17 @@ export async function rejectProperty(propertyId: string, reason: string) {
 }
 
 /**
- * Assign property to agent
+ * Assign property to agent (validates tenant access)
  */
-export async function assignPropertyToAgent(propertyId: string, agentId: string) {
+export async function assignPropertyToAgent(propertyId: string, agentId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .update({ agent_id: agentId })
     .eq('id', propertyId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -366,15 +389,17 @@ export async function assignPropertyToAgent(propertyId: string, agentId: string)
 }
 
 /**
- * Toggle property featured status
+ * Toggle property featured status (validates tenant access)
  */
-export async function togglePropertyFeatured(propertyId: string, isFeatured: boolean) {
+export async function togglePropertyFeatured(propertyId: string, isFeatured: boolean, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .update({ is_featured: isFeatured })
     .eq('id', propertyId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -382,15 +407,17 @@ export async function togglePropertyFeatured(propertyId: string, isFeatured: boo
 }
 
 /**
- * Toggle property active status
+ * Toggle property active status (validates tenant access)
  */
-export async function togglePropertyActive(propertyId: string, isActive: boolean) {
+export async function togglePropertyActive(propertyId: string, isActive: boolean, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('properties')
     .update({ is_active: isActive })
     .eq('id', propertyId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -398,11 +425,11 @@ export async function togglePropertyActive(propertyId: string, isActive: boolean
 }
 
 // =====================================================
-// CONTACT SUBMISSIONS QUERIES
+// CONTACT SUBMISSIONS QUERIES (Multi-tenant)
 // =====================================================
 
 /**
- * Get all contact submissions (admin)
+ * Get all contact submissions for tenant (admin)
  */
 export async function getContactSubmissions(
   options: {
@@ -410,9 +437,10 @@ export async function getContactSubmissions(
     agentId?: string;
     limit?: number;
     offset?: number;
-  } = {}
+  } = {},
+  tenantId?: string
 ) {
-  // Usar admin client para bypasear RLS
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
@@ -425,6 +453,7 @@ export async function getContactSubmissions(
     `,
       { count: 'exact' }
     )
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false });
 
   if (options.status) {
@@ -457,13 +486,15 @@ export async function getContactSubmissions(
 }
 
 /**
- * Update contact submission status
+ * Update contact submission status (validates tenant access)
  */
 export async function updateSubmissionStatus(
   submissionId: string,
   status: string,
-  notes?: string
+  notes?: string,
+  tenantId?: string
 ) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const updates: Record<string, unknown> = { status };
@@ -473,6 +504,7 @@ export async function updateSubmissionStatus(
     .from('contact_submissions')
     .update(updates)
     .eq('id', submissionId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -480,15 +512,17 @@ export async function updateSubmissionStatus(
 }
 
 /**
- * Assign submission to agent
+ * Assign submission to agent (validates tenant access)
  */
-export async function assignSubmissionToAgent(submissionId: string, agentId: string) {
+export async function assignSubmissionToAgent(submissionId: string, agentId: string, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('contact_submissions')
     .update({ agent_id: agentId })
     .eq('id', submissionId)
+    .eq('tenant_id', currentTenantId)
     .select()
     .single();
 
@@ -496,25 +530,27 @@ export async function assignSubmissionToAgent(submissionId: string, agentId: str
 }
 
 // =====================================================
-// DASHBOARD STATS
+// DASHBOARD STATS (Multi-tenant)
 // =====================================================
 
 /**
- * Get admin dashboard stats
+ * Get admin dashboard stats for tenant
  */
-export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  // Usar admin client para bypasear RLS
+export async function getAdminDashboardStats(tenantId?: string): Promise<AdminDashboardStats> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Total properties
   const { count: totalProperties } = await supabase
     .from('properties')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId);
 
   // Active properties
   const { count: activeProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true)
     .eq('submission_status', 'approved');
 
@@ -522,18 +558,21 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const { count: pendingProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('submission_status', 'pending');
 
   // Total agents
   const { count: totalAgents } = await supabase
     .from('agents')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('is_active', true);
 
   // Total users
   const { count: totalUsers } = await supabase
     .from('profiles')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId);
 
   // Leads this month
   const startOfMonth = new Date();
@@ -543,6 +582,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const { count: leadsThisMonth } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .gte('created_at', startOfMonth.toISOString());
 
   // Leads last month
@@ -557,6 +597,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   const { count: leadsLastMonth } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .gte('created_at', startOfLastMonth.toISOString())
     .lt('created_at', startOfMonth.toISOString());
 
@@ -578,28 +619,31 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
 }
 
 /**
- * Get agent dashboard stats
+ * Get agent dashboard stats (within tenant)
  */
-export async function getAgentDashboardStats(agentId: string): Promise<AgentDashboardStats> {
-  // Usar admin client para bypasear RLS
+export async function getAgentDashboardStats(agentId: string, tenantId?: string): Promise<AgentDashboardStats> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Assigned properties
   const { count: assignedProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('agent_id', agentId);
 
   // Total leads
   const { count: totalLeads } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('agent_id', agentId);
 
   // New leads (status = 'nuevo')
   const { count: newLeads } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('agent_id', agentId)
     .eq('status', 'nuevo');
 
@@ -607,6 +651,7 @@ export async function getAgentDashboardStats(agentId: string): Promise<AgentDash
   const { count: convertedLeads } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('agent_id', agentId)
     .eq('status', 'convertido');
 
@@ -615,6 +660,7 @@ export async function getAgentDashboardStats(agentId: string): Promise<AgentDash
     .from('agents')
     .select('rating')
     .eq('id', agentId)
+    .eq('tenant_id', currentTenantId)
     .single();
 
   return {
@@ -627,16 +673,17 @@ export async function getAgentDashboardStats(agentId: string): Promise<AgentDash
 }
 
 /**
- * Get user dashboard stats
+ * Get user dashboard stats (within tenant)
  */
-export async function getUserDashboardStats(userId: string): Promise<UserDashboardStats> {
-  // Usar admin client para bypasear RLS
+export async function getUserDashboardStats(userId: string, tenantId?: string): Promise<UserDashboardStats> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Published properties
   const { count: publishedProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('submitted_by', userId)
     .eq('submission_status', 'approved');
 
@@ -644,6 +691,7 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
   const { count: pendingProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('submitted_by', userId)
     .eq('submission_status', 'pending');
 
@@ -651,6 +699,7 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
   const { count: rejectedProperties } = await supabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', currentTenantId)
     .eq('submitted_by', userId)
     .eq('submission_status', 'rejected');
 
@@ -658,6 +707,7 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
   const { data: properties } = await supabase
     .from('properties')
     .select('views_count')
+    .eq('tenant_id', currentTenantId)
     .eq('submitted_by', userId);
 
   const totalViews =
@@ -672,17 +722,20 @@ export async function getUserDashboardStats(userId: string): Promise<UserDashboa
 }
 
 // =====================================================
-// SITE SETTINGS
+// SITE SETTINGS (Multi-tenant)
 // =====================================================
 
 /**
- * Get all site settings
+ * Get all site settings for tenant
  */
-export async function getSiteSettings() {
-  // Usar admin client para bypasear RLS
+export async function getSiteSettings(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
-  const { data, error } = await supabase.from('site_settings').select('*');
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('*')
+    .eq('tenant_id', currentTenantId);
 
   if (error) {
     console.error('Error fetching site settings:', error);
@@ -700,14 +753,18 @@ export async function getSiteSettings() {
 }
 
 /**
- * Update site setting
+ * Update site setting (validates tenant access)
  */
-export async function updateSiteSetting(key: string, value: unknown) {
+export async function updateSiteSetting(key: string, value: unknown, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('site_settings')
-    .upsert({ key, value }, { onConflict: 'key' })
+    .upsert(
+      { tenant_id: currentTenantId, key, value },
+      { onConflict: 'tenant_id,key' }
+    )
     .select()
     .single();
 
@@ -715,20 +772,65 @@ export async function updateSiteSetting(key: string, value: unknown) {
 }
 
 /**
- * Update multiple site settings
+ * Update multiple site settings (validates tenant access)
  */
-export async function updateSiteSettings(settings: Record<string, unknown>) {
+export async function updateSiteSettings(settings: Record<string, unknown>, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const updates = Object.entries(settings).map(([key, value]) => ({
+    tenant_id: currentTenantId,
     key,
     value,
   }));
 
   const { data, error } = await supabase
     .from('site_settings')
-    .upsert(updates, { onConflict: 'key' })
+    .upsert(updates, { onConflict: 'tenant_id,key' })
     .select();
+
+  return { data, error };
+}
+
+// =====================================================
+// AGENTS QUERIES (Admin - Multi-tenant)
+// =====================================================
+
+/**
+ * Get all agents for tenant (admin)
+ */
+export async function getAdminAgents(tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('agents')
+    .select('*')
+    .eq('tenant_id', currentTenantId)
+    .order('first_name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching agents:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Toggle agent active status (validates tenant access)
+ */
+export async function toggleAgentActive(agentId: string, isActive: boolean, tenantId?: string) {
+  const currentTenantId = tenantId || await getCurrentTenantId();
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('agents')
+    .update({ is_active: isActive })
+    .eq('id', agentId)
+    .eq('tenant_id', currentTenantId)
+    .select()
+    .single();
 
   return { data, error };
 }

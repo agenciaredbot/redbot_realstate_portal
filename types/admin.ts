@@ -3,7 +3,12 @@
 // =====================================================
 
 // User Roles
+// 0 = Super Admin (manages all tenants)
+// 1 = Admin (manages their tenant)
+// 2 = Agent (real estate agent)
+// 3 = User (regular user)
 export const USER_ROLES = {
+  SUPER_ADMIN: 0,
   ADMIN: 1,
   AGENT: 2,
   USER: 3,
@@ -12,6 +17,7 @@ export const USER_ROLES = {
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
+  [USER_ROLES.SUPER_ADMIN]: 'Super Admin',
   [USER_ROLES.ADMIN]: 'Administrador',
   [USER_ROLES.AGENT]: 'Agente',
   [USER_ROLES.USER]: 'Usuario',
@@ -26,6 +32,7 @@ export interface Profile {
   avatar_url: string | null;
   role: UserRole;
   agent_id: string | null;
+  tenant_id: string;  // Multi-tenant support
   is_active: boolean;
   created_at: string;
   updated_at: string;

@@ -10,6 +10,9 @@ export * from './agent';
 // Blog Types
 export * from './blog';
 
+// Tenant Types (Multi-tenant SaaS)
+export * from './tenant';
+
 // Contact Form Types
 export interface ContactSubmission {
   id: string;

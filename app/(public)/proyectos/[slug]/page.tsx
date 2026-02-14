@@ -47,7 +47,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   const slugs = await getAllProjectSlugs();
-  return slugs.map((slug: string) => ({
-    slug,
+  return slugs.map((item) => ({
+    slug: item.slug,
   }));
 }

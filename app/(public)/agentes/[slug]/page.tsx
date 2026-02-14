@@ -26,8 +26,8 @@ interface AgentDetailPageProps {
 // Generate static params
 export async function generateStaticParams() {
   const slugs = await getAllAgentSlugs();
-  return slugs.map((a) => ({
-    slug: a.slug,
+  return slugs.map((item) => ({
+    slug: item.slug,
   }));
 }
 

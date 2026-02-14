@@ -1,20 +1,23 @@
 import { createAdminClient } from './server';
+import { getCurrentTenantId } from './tenant-queries';
 import type { BlogPostDB, BlogCategory, BlogFilters, BlogStats } from '@/types/blog';
 import type { BlogPost } from '@/types';
 
 // =====================================================
-// BLOG POSTS QUERIES
+// BLOG POSTS QUERIES (Multi-tenant)
 // =====================================================
 
 /**
  * Get all blog posts with optional filters
  */
-export async function getBlogPosts(filters?: BlogFilters): Promise<BlogPostDB[]> {
+export async function getBlogPosts(filters?: BlogFilters, tenantId?: string): Promise<BlogPostDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .order('created_at', { ascending: false });
 
   // Apply filters
@@ -55,12 +58,14 @@ export async function getBlogPosts(filters?: BlogFilters): Promise<BlogPostDB[]>
 /**
  * Get published blog posts for public pages
  */
-export async function getPublishedBlogPosts(limit = 10): Promise<BlogPostDB[]> {
+export async function getPublishedBlogPosts(limit = 10, tenantId?: string): Promise<BlogPostDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_published', true)
     .order('published_at', { ascending: false })
     .limit(limit);
@@ -76,12 +81,14 @@ export async function getPublishedBlogPosts(limit = 10): Promise<BlogPostDB[]> {
 /**
  * Get featured blog posts
  */
-export async function getFeaturedBlogPosts(limit = 3): Promise<BlogPostDB[]> {
+export async function getFeaturedBlogPosts(limit = 3, tenantId?: string): Promise<BlogPostDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_published', true)
     .eq('is_featured', true)
     .order('published_at', { ascending: false })
@@ -98,12 +105,14 @@ export async function getFeaturedBlogPosts(limit = 3): Promise<BlogPostDB[]> {
 /**
  * Get a single blog post by ID
  */
-export async function getBlogPostById(id: string): Promise<BlogPostDB | null> {
+export async function getBlogPostById(id: string, tenantId?: string): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -118,12 +127,14 @@ export async function getBlogPostById(id: string): Promise<BlogPostDB | null> {
 /**
  * Get a single blog post by slug (for public pages)
  */
-export async function getBlogPostBySlug(slug: string): Promise<BlogPostDB | null> {
+export async function getBlogPostBySlug(slug: string, tenantId?: string): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug)
     .eq('is_published', true)
     .single();
@@ -142,13 +153,16 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPostDB | null
 export async function getRelatedBlogPosts(
   category: string,
   excludeId: string,
-  limit = 3
+  limit = 3,
+  tenantId?: string
 ): Promise<BlogPostDB[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .eq('is_published', true)
     .eq('category', category)
     .neq('id', excludeId)
@@ -165,13 +179,14 @@ export async function getRelatedBlogPosts(
 
 /**
  * Get all blog post slugs (for static generation)
+ * Returns data for ALL tenants (used at build time)
  */
-export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
+export async function getAllBlogPostSlugs(): Promise<{ slug: string; tenant_id: string }[]> {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('slug')
+    .select('slug, tenant_id')
     .eq('is_published', true);
 
   if (error) {
@@ -185,7 +200,8 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
 /**
  * Increment view count for a blog post
  */
-export async function incrementBlogViewCount(id: string): Promise<void> {
+export async function incrementBlogViewCount(id: string, tenantId?: string): Promise<void> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { error } = await supabase.rpc('increment_blog_views', { post_id: id });
@@ -195,23 +211,26 @@ export async function incrementBlogViewCount(id: string): Promise<void> {
     await supabase
       .from('blog_posts')
       .update({ views_count: supabase.rpc('coalesce', { value: 'views_count', default: 0 }) })
+      .eq('tenant_id', currentTenantId)
       .eq('id', id);
   }
 }
 
 // =====================================================
-// BLOG CATEGORIES QUERIES
+// BLOG CATEGORIES QUERIES (Multi-tenant)
 // =====================================================
 
 /**
  * Get all blog categories
  */
-export async function getBlogCategories(): Promise<BlogCategory[]> {
+export async function getBlogCategories(tenantId?: string): Promise<BlogCategory[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_categories')
     .select('*')
+    .eq('tenant_id', currentTenantId)
     .order('name', { ascending: true });
 
   if (error) {
@@ -225,12 +244,14 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
 /**
  * Get unique categories from published posts
  */
-export async function getUsedBlogCategories(): Promise<string[]> {
+export async function getUsedBlogCategories(tenantId?: string): Promise<string[]> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('blog_posts')
     .select('category')
+    .eq('tenant_id', currentTenantId)
     .eq('is_published', true)
     .not('category', 'is', null);
 
@@ -244,21 +265,22 @@ export async function getUsedBlogCategories(): Promise<string[]> {
 }
 
 // =====================================================
-// BLOG STATS
+// BLOG STATS (Multi-tenant)
 // =====================================================
 
 /**
  * Get blog statistics for admin dashboard
  */
-export async function getBlogStats(): Promise<BlogStats> {
+export async function getBlogStats(tenantId?: string): Promise<BlogStats> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get counts
   const [totalResult, publishedResult, featuredResult, viewsResult] = await Promise.all([
-    supabase.from('blog_posts').select('id', { count: 'exact', head: true }),
-    supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('is_featured', true),
-    supabase.from('blog_posts').select('views_count'),
+    supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId),
+    supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('is_published', true),
+    supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('tenant_id', currentTenantId).eq('is_featured', true),
+    supabase.from('blog_posts').select('views_count').eq('tenant_id', currentTenantId),
   ]);
 
   const total = totalResult.count || 0;
@@ -276,15 +298,17 @@ export async function getBlogStats(): Promise<BlogStats> {
 }
 
 // =====================================================
-// BLOG MUTATIONS
+// BLOG MUTATIONS (Multi-tenant)
 // =====================================================
 
 /**
  * Create a new blog post
  */
 export async function createBlogPost(
-  data: Partial<BlogPostDB>
+  data: Partial<BlogPostDB>,
+  tenantId?: string
 ): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Generate slug if not provided
@@ -297,9 +321,15 @@ export async function createBlogPost(
     data.published_at = new Date().toISOString();
   }
 
+  // Add tenant_id
+  const postData = {
+    ...data,
+    tenant_id: currentTenantId,
+  };
+
   const { data: post, error } = await supabase
     .from('blog_posts')
-    .insert(data)
+    .insert(postData)
     .select()
     .single();
 
@@ -316,8 +346,10 @@ export async function createBlogPost(
  */
 export async function updateBlogPost(
   id: string,
-  data: Partial<BlogPostDB>
+  data: Partial<BlogPostDB>,
+  tenantId?: string
 ): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Set published_at if publishing for the first time
@@ -326,6 +358,7 @@ export async function updateBlogPost(
     const { data: existing } = await supabase
       .from('blog_posts')
       .select('published_at')
+      .eq('tenant_id', currentTenantId)
       .eq('id', id)
       .single();
 
@@ -337,6 +370,7 @@ export async function updateBlogPost(
   const { data: post, error } = await supabase
     .from('blog_posts')
     .update(data)
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();
@@ -352,12 +386,14 @@ export async function updateBlogPost(
 /**
  * Delete a blog post
  */
-export async function deleteBlogPost(id: string): Promise<void> {
+export async function deleteBlogPost(id: string, tenantId?: string): Promise<void> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('blog_posts')
     .delete()
+    .eq('tenant_id', currentTenantId)
     .eq('id', id);
 
   if (error) {
@@ -369,13 +405,15 @@ export async function deleteBlogPost(id: string): Promise<void> {
 /**
  * Toggle blog post published status
  */
-export async function toggleBlogPublished(id: string): Promise<BlogPostDB | null> {
+export async function toggleBlogPublished(id: string, tenantId?: string): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get current status
   const { data: current } = await supabase
     .from('blog_posts')
     .select('is_published, published_at')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -396,6 +434,7 @@ export async function toggleBlogPublished(id: string): Promise<BlogPostDB | null
   const { data: post, error } = await supabase
     .from('blog_posts')
     .update(updateData)
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();
@@ -411,13 +450,15 @@ export async function toggleBlogPublished(id: string): Promise<BlogPostDB | null
 /**
  * Toggle blog post featured status
  */
-export async function toggleBlogFeatured(id: string): Promise<BlogPostDB | null> {
+export async function toggleBlogFeatured(id: string, tenantId?: string): Promise<BlogPostDB | null> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   // Get current status
   const { data: current } = await supabase
     .from('blog_posts')
     .select('is_featured')
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .single();
 
@@ -428,6 +469,7 @@ export async function toggleBlogFeatured(id: string): Promise<BlogPostDB | null>
   const { data: post, error } = await supabase
     .from('blog_posts')
     .update({ is_featured: !current.is_featured })
+    .eq('tenant_id', currentTenantId)
     .eq('id', id)
     .select()
     .single();
@@ -460,14 +502,16 @@ function generateSlug(title: string): string {
 }
 
 /**
- * Check if slug exists
+ * Check if slug exists (within tenant)
  */
-export async function checkSlugExists(slug: string, excludeId?: string): Promise<boolean> {
+export async function checkSlugExists(slug: string, excludeId?: string, tenantId?: string): Promise<boolean> {
+  const currentTenantId = tenantId || await getCurrentTenantId();
   const supabase = createAdminClient();
 
   let query = supabase
     .from('blog_posts')
     .select('id')
+    .eq('tenant_id', currentTenantId)
     .eq('slug', slug);
 
   if (excludeId) {
