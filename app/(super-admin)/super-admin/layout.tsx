@@ -130,6 +130,8 @@ export default function SuperAdminLayout({
               <span className="text-gray-900 font-medium">
                 {pathname.includes('/tenants/nuevo')
                   ? 'Nuevo Tenant'
+                  : pathname.includes('/editar')
+                  ? 'Editar Tenant'
                   : pathname.includes('/tenants/')
                   ? 'Detalle Tenant'
                   : pathname.includes('/tenants')

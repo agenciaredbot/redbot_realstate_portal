@@ -8,7 +8,6 @@ import {
   Users,
   Home,
   FileText,
-  Settings,
   ExternalLink,
   Mail,
   Phone,
@@ -16,7 +15,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
+import { TenantActions } from '@/components/super-admin/TenantActions';
 import type { Tenant } from '@/types/tenant';
 
 interface PageProps {
@@ -372,28 +371,7 @@ async function TenantDetailContent({ id }: { id: string }) {
       </div>
 
       {/* Actions */}
-      <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones</h2>
-        <div className="flex flex-wrap gap-4">
-          <Button variant="outline">
-            <Settings className="w-4 h-4 mr-2" />
-            Editar Configuración
-          </Button>
-          <Button variant="outline">
-            <Users className="w-4 h-4 mr-2" />
-            Impersonar Admin
-          </Button>
-          {tenant.is_active ? (
-            <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-              Desactivar Tenant
-            </Button>
-          ) : (
-            <Button variant="outline" className="text-green-600 hover:text-green-700 hover:bg-green-50">
-              Activar Tenant
-            </Button>
-          )}
-        </div>
-      </div>
+      <TenantActions tenant={tenant} />
     </div>
   );
 }
