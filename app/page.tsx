@@ -1,6 +1,4 @@
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
 
 // Marketing Landing Page Components
 import MarketingHomePage from './(marketing)/page';
@@ -67,7 +65,7 @@ export default async function HomePage() {
 
   // We're on a tenant subdomain - show their portal
   // Get tenant from subdomain
-  let tenant: Tenant = getDefaultTenant();
+  let tenant: Tenant = await getDefaultTenant();
 
   const parts = hostname.split('.');
   if (parts.length >= 2) {
