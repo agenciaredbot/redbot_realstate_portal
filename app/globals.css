@@ -11,14 +11,9 @@
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-heading);
 
-  /* Luxus Theme Colors */
-  --color-luxus-gold: #E8A838;
-  --color-luxus-gold-dark: #D4922A;
-  --color-luxus-gold-light: #F5C76B;
-  --color-luxus-dark: #1A1A2E;
+  /* Luxus Theme Colors - Static defaults for Tailwind build */
   --color-luxus-cream: #FFF9F0;
   --color-luxus-green: #22C55E;
-  --color-luxus-orange: #F97316;
   --color-luxus-gray: #6B7280;
   --color-luxus-gray-light: #E5E7EB;
   --color-luxus-gray-dark: #374151;
@@ -65,6 +60,18 @@
 :root {
   --radius: 0.625rem;
   --font-heading: 'DM Sans', system-ui, sans-serif;
+
+  /* Tenant Theme Colors - Can be overridden by TenantThemeProvider */
+  --color-luxus-gold: #E8A838;
+  --color-luxus-gold-dark: #D4922A;
+  --color-luxus-gold-light: #F5C76B;
+  --color-luxus-gold-hover: #D4922A;
+  --color-luxus-dark: #1A1A2E;
+  --color-luxus-orange: #F97316;
+  --color-primary: #E8A838;
+  --color-secondary: #1A1A2E;
+  --color-accent: #E8A838;
+  --color-accent-2: #F97316;
 
   /* Luxus Light Theme (default) */
   --background: #FFFFFF;
@@ -172,26 +179,87 @@
 
   /* Selección de texto con color de marca */
   ::selection {
-    background-color: rgba(232, 168, 56, 0.2);
-    color: #1A1A2E;
+    background-color: color-mix(in srgb, var(--color-luxus-gold) 20%, transparent);
+    color: var(--color-luxus-dark);
   }
 }
 
 /* Custom Utility Classes */
 @layer utilities {
+  /* Dynamic theme colors - These use CSS variables that can be overridden */
+  .bg-luxus-gold {
+    background-color: var(--color-luxus-gold);
+  }
+
+  .bg-luxus-gold-dark {
+    background-color: var(--color-luxus-gold-dark);
+  }
+
+  .bg-luxus-gold-light {
+    background-color: var(--color-luxus-gold-light);
+  }
+
+  .bg-luxus-dark {
+    background-color: var(--color-luxus-dark);
+  }
+
+  .bg-luxus-orange {
+    background-color: var(--color-luxus-orange);
+  }
+
+  .text-luxus-gold {
+    color: var(--color-luxus-gold);
+  }
+
+  .text-luxus-gold-dark {
+    color: var(--color-luxus-gold-dark);
+  }
+
+  .text-luxus-dark {
+    color: var(--color-luxus-dark);
+  }
+
+  .text-luxus-orange {
+    color: var(--color-luxus-orange);
+  }
+
+  .border-luxus-gold {
+    border-color: var(--color-luxus-gold);
+  }
+
+  .border-luxus-dark {
+    border-color: var(--color-luxus-dark);
+  }
+
+  .hover\:bg-luxus-gold-dark:hover {
+    background-color: var(--color-luxus-gold-dark);
+  }
+
+  .hover\:bg-luxus-gold:hover {
+    background-color: var(--color-luxus-gold);
+  }
+
+  .hover\:text-luxus-gold:hover {
+    color: var(--color-luxus-gold);
+  }
+
+  .hover\:border-luxus-gold:hover {
+    border-color: var(--color-luxus-gold);
+  }
+
   .text-gradient-gold {
-    background: linear-gradient(135deg, #E8A838 0%, #D4922A 100%);
+    background: linear-gradient(135deg, var(--color-luxus-gold) 0%, var(--color-luxus-gold-dark) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .bg-gradient-gold {
-    background: linear-gradient(135deg, #E8A838 0%, #D4922A 100%);
+    background: linear-gradient(135deg, var(--color-luxus-gold) 0%, var(--color-luxus-gold-dark) 100%);
   }
 
   .border-dashed-gold {
-    border: 1px dashed #E8A838;
+    border: 1px dashed var(--color-luxus-gold);
   }
 
   .shadow-luxus {
@@ -216,12 +284,12 @@
 .swiper-button-next::after,
 .swiper-button-prev::after {
   font-size: 18px !important;
-  color: #E8A838;
+  color: var(--color-luxus-gold);
   font-weight: bold;
 }
 
 .swiper-pagination-bullet-active {
-  background-color: #E8A838 !important;
+  background-color: var(--color-luxus-gold) !important;
 }
 
 /* Custom Scrollbar */
@@ -235,18 +303,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #E8A838;
+  background: var(--color-luxus-gold);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4922A;
+  background: var(--color-luxus-gold-dark);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #E8A838 #FFF9F0;
+  scrollbar-color: var(--color-luxus-gold) #FFF9F0;
 }
 
 /* Animations */

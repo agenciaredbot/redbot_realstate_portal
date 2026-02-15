@@ -46,6 +46,7 @@ export function Footer({ tenant }: FooterProps) {
   const companyInitial = companyName.charAt(0).toUpperCase();
   const logoUrl = tenant?.logo_dark_url || tenant?.logo_url;
   const primaryColor = tenant?.primary_color || '#C9A962';
+  const secondaryColor = tenant?.secondary_color || '#1A1A2E';
 
   // Contact info from tenant or defaults
   const contactEmail = tenant?.company_email || CONTACT_INFO.email;
@@ -66,7 +67,7 @@ export function Footer({ tenant }: FooterProps) {
   ].filter((s) => s.href); // Only show icons with URLs
 
   return (
-    <footer className="bg-luxus-dark text-white">
+    <footer className="text-white" style={{ backgroundColor: secondaryColor }}>
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">

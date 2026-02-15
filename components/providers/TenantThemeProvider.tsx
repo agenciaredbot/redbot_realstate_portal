@@ -27,10 +27,11 @@ function applyTenantTheme(tenant: Tenant) {
       // Generate hover/active variants
       root.style.setProperty('--color-luxus-gold-hover', adjustBrightness(tenant.primary_color, -10));
       root.style.setProperty('--color-luxus-gold-light', adjustBrightness(tenant.primary_color, 40));
+      root.style.setProperty('--color-luxus-gold-dark', adjustBrightness(tenant.primary_color, -15));
     }
   }
 
-  // Secondary color (dark)
+  // Secondary color (dark) - used for footer background, etc.
   if (tenant.secondary_color) {
     const secondaryHSL = hexToHSL(tenant.secondary_color);
     if (secondaryHSL) {
@@ -40,9 +41,20 @@ function applyTenantTheme(tenant: Tenant) {
     }
   }
 
-  // Accent color
+  // Accent color (original)
   if (tenant.accent_color) {
     root.style.setProperty('--color-accent', tenant.accent_color);
+  }
+
+  // Accent color 2 (secondary accent - e.g., orange for buttons)
+  if (tenant.accent_color_2) {
+    const accent2HSL = hexToHSL(tenant.accent_color_2);
+    if (accent2HSL) {
+      root.style.setProperty('--color-luxus-orange', tenant.accent_color_2);
+      root.style.setProperty('--color-accent-2', tenant.accent_color_2);
+      root.style.setProperty('--accent', `${accent2HSL.h} ${accent2HSL.s}% ${accent2HSL.l}%`);
+      root.style.setProperty('--ring', `${accent2HSL.h} ${accent2HSL.s}% ${accent2HSL.l}%`);
+    }
   }
 
   // Update favicon if provided
@@ -105,7 +117,7 @@ export function TenantThemeProvider({ tenant, children }: TenantThemeProviderPro
   // Re-apply if tenant changes
   useEffect(() => {
     applyTenantTheme(tenant);
-  }, [tenant.primary_color, tenant.secondary_color, tenant.accent_color, tenant.favicon_url]);
+  }, [tenant.primary_color, tenant.secondary_color, tenant.accent_color, tenant.accent_color_2, tenant.favicon_url]);
 
   return (
     <TenantProvider initialTenant={tenant}>
