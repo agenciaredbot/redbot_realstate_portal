@@ -71,7 +71,7 @@ export function Hero({ tenant }: HeroProps) {
         <div
           className="absolute inset-0"
           style={{
-            backgroundColor: 'rgba(26, 26, 46, 0.65)'
+            backgroundColor: 'rgba(26, 26, 46, 0.55)'
           }}
         />
       </div>
