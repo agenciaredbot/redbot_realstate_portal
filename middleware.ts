@@ -61,6 +61,7 @@ export async function middleware(request: NextRequest) {
     'redbot.app',
     'www.redbot.app',
     'redbot-portal.vercel.app',
+    'redbot-realstate-portal.vercel.app',
   ];
 
   // Check if this is a main domain (use default tenant)
