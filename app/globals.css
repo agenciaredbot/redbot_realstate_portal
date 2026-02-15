@@ -243,6 +243,14 @@
     color: var(--color-luxus-gold);
   }
 
+  .text-luxus-gold-light {
+    color: var(--color-luxus-gold-light);
+  }
+
+  .hover\:text-luxus-gold-light:hover {
+    color: var(--color-luxus-gold-light);
+  }
+
   .hover\:border-luxus-gold:hover {
     border-color: var(--color-luxus-gold);
   }
