@@ -50,6 +50,31 @@ export interface Tenant {
   // Features
   features: TenantFeatures;
 
+  // Hero section content
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  hero_image_url: string | null;
+
+  // About section content
+  about_title: string | null;
+  about_description: string | null;
+  about_image_url: string | null;
+  about_stats: TenantAboutStats | null;
+
+  // Footer content
+  footer_description: string | null;
+  footer_copyright: string | null;
+
+  // Additional branding
+  accent_color_2: string | null;
+  font_heading: string | null;
+  font_body: string | null;
+
+  // Contact page content
+  contact_title: string | null;
+  contact_description: string | null;
+  contact_map_url: string | null;
+
   // SEO defaults
   seo_title: string | null;
   seo_description: string | null;
@@ -83,6 +108,16 @@ export interface TenantSocialLinks {
   youtube?: string;
   tiktok?: string;
   whatsapp?: string;
+}
+
+/**
+ * About section statistics
+ */
+export interface TenantAboutStats {
+  properties?: string;
+  clients?: string;
+  years?: string;
+  agents?: string;
 }
 
 /**

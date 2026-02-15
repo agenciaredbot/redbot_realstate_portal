@@ -193,7 +193,7 @@ export async function getDefaultTenant(): Promise<Tenant> {
       name: 'Redbot Real Estate',
       slug: 'redbot',
       domain: null,
-      subdomain: 'app',
+      subdomain: 'demo',
       logo_url: '/images/logo.png',
       logo_dark_url: '/images/logo-dark.png',
       favicon_url: '/favicon.ico',
@@ -221,6 +221,27 @@ export async function getDefaultTenant(): Promise<Tenant> {
         white_label: true,
         api_access: true,
       },
+      // Hero section content
+      hero_title: 'Encuentra Tu Propiedad Ideal',
+      hero_subtitle: 'Explora nuestra amplia selección de propiedades y encuentra el lugar perfecto que se ajuste a tus necesidades y estilo de vida.',
+      hero_image_url: null,
+      // About section content
+      about_title: 'Sobre Nosotros',
+      about_description: 'Somos una inmobiliaria comprometida con ayudarte a encontrar el hogar de tus sueños. Con años de experiencia en el mercado, ofrecemos un servicio personalizado y profesional.',
+      about_image_url: null,
+      about_stats: { properties: '250+', clients: '500+', years: '10+', agents: '15+' },
+      // Footer content
+      footer_description: 'Tu socio confiable en el mercado inmobiliario. Encuentra la propiedad perfecta con nosotros.',
+      footer_copyright: null,
+      // Additional branding
+      accent_color_2: '#2563EB',
+      font_heading: 'DM Sans',
+      font_body: 'Inter',
+      // Contact page content
+      contact_title: null,
+      contact_description: null,
+      contact_map_url: null,
+      // SEO
       seo_title: 'Redbot Real Estate - Propiedades en Colombia',
       seo_description: 'Encuentra tu propiedad ideal en Colombia',
       seo_keywords: null,

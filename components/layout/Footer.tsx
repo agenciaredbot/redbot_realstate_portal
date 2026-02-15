@@ -97,7 +97,8 @@ export function Footer({ tenant }: FooterProps) {
               )}
             </Link>
             <p className="text-luxus-gray-light text-sm leading-relaxed">
-              {tenant?.seo_description ||
+              {tenant?.footer_description ||
+                tenant?.seo_description ||
                 'Tu socio confiable en el mercado inmobiliario colombiano. Encuentra la propiedad de tus suenos con nuestra asesoria experta.'}
             </p>
             {/* Social Icons */}
@@ -239,7 +240,8 @@ export function Footer({ tenant }: FooterProps) {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-luxus-gray-light">
           <p>
-            &copy; {currentYear} {companyName}. Todos los derechos reservados.
+            {tenant?.footer_copyright ||
+              `© ${currentYear} ${companyName}. Todos los derechos reservados.`}
           </p>
           <div className="flex items-center gap-6">
             <Link href="/privacidad" className="hover:text-luxus-gold transition-colors">

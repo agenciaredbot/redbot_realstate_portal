@@ -1,15 +1,38 @@
 'use client';
 
 import { SearchBar } from '@/components/search/SearchBar';
+import type { Tenant } from '@/types/tenant';
 
-export function Hero() {
+interface HeroProps {
+  tenant?: Tenant;
+}
+
+export function Hero({ tenant }: HeroProps) {
+  // Get tenant-specific content or fallback to defaults
+  const heroTitle = tenant?.hero_title || 'Encuentra Tu Propiedad Ideal';
+  const heroSubtitle = tenant?.hero_subtitle ||
+    'Explora nuestra amplia selección de propiedades y encuentra el lugar perfecto que se ajuste a tus necesidades y estilo de vida.';
+  const heroImage = tenant?.hero_image_url ||
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80';
+
+  // Get stats from tenant about_stats or use defaults
+  const stats = tenant?.about_stats || {
+    properties: '250+',
+    clients: '500+',
+    years: '10+',
+    agents: '15+',
+  };
+
+  // Get tenant colors for accent
+  const primaryColor = tenant?.primary_color || '#C9A962';
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80')`,
+          backgroundImage: `url('${heroImage}')`,
         }}
       >
         {/* Overlay with improved gradient */}
@@ -21,15 +44,24 @@ export function Hero() {
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16 text-center">
         {/* Main Heading */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 font-heading leading-tight tracking-tight animate-fade-in">
-          Encuentra Tu Propiedad
-          <br />
-          <span className="text-luxus-gold drop-shadow-lg">Ideal</span> en Colombia.
+          {heroTitle.includes(' ') ? (
+            <>
+              {heroTitle.split(' ').slice(0, -1).join(' ')}
+              <br />
+              <span style={{ color: primaryColor }} className="drop-shadow-lg">
+                {heroTitle.split(' ').slice(-1)[0]}
+              </span>
+            </>
+          ) : (
+            <span style={{ color: primaryColor }} className="drop-shadow-lg">
+              {heroTitle}
+            </span>
+          )}
         </h1>
 
         {/* Subheading */}
         <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto mb-10 animate-fade-in stagger-1">
-          Explora nuestra amplia selección de propiedades y encuentra el lugar
-          perfecto que se ajuste a tus necesidades y estilo de vida.
+          {heroSubtitle}
         </p>
 
         {/* Search Bar */}
@@ -38,20 +70,20 @@ export function Hero() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">250+</div>
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stats.properties}</div>
             <div className="text-sm text-white/70">Propiedades</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">15+</div>
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stats.agents}</div>
             <div className="text-sm text-white/70">Agentes</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">500+</div>
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stats.clients}</div>
             <div className="text-sm text-white/70">Clientes Felices</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">10+</div>
-            <div className="text-sm text-white/70">Ciudades</div>
+            <div className="text-3xl sm:text-4xl font-bold text-white mb-1">{stats.years}</div>
+            <div className="text-sm text-white/70">Años de Experiencia</div>
           </div>
         </div>
       </div>

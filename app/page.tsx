@@ -83,6 +83,15 @@ export default async function HomePage() {
     }
   }
 
+  // Debug: log tenant data to check values
+  console.log('Tenant loaded:', {
+    name: tenant.name,
+    subdomain: tenant.subdomain,
+    primary_color: tenant.primary_color,
+    hero_title: tenant.hero_title,
+    hero_subtitle: tenant.hero_subtitle,
+  });
+
   // Fetch tenant-specific data
   const [featuredProperties, recentProperties, agents, sanityTestimonials, supabaseBlogPosts, categories, sanityServices] =
     await Promise.all([
@@ -120,8 +129,8 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar tenant={tenant} />
       <main className="flex-1">
-        <Hero />
-        <AboutSection />
+        <Hero tenant={tenant} />
+        <AboutSection tenant={tenant} />
         <CategoriesSection categories={categories} />
         <FeaturedListings properties={featuredProperties} agents={agentsMap} />
         <ServicesSection services={services} />

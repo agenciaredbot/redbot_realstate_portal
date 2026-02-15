@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import type { Tenant } from '@/types/tenant';
 
 interface CounterProps {
   end: number;
@@ -58,7 +59,45 @@ function AnimatedCounter({ end, duration = 2000, suffix = '' }: CounterProps) {
   );
 }
 
-export function AboutSection() {
+// Helper to parse stat value like "250+" into { value: 250, suffix: "+" }
+function parseStatValue(stat: string | undefined): { value: number; suffix: string } {
+  if (!stat) return { value: 0, suffix: '' };
+  const match = stat.match(/^(\d+)(.*)$/);
+  if (match) {
+    return { value: parseInt(match[1], 10), suffix: match[2] || '' };
+  }
+  return { value: 0, suffix: '' };
+}
+
+interface AboutSectionProps {
+  tenant?: Tenant;
+}
+
+export function AboutSection({ tenant }: AboutSectionProps) {
+  // Get tenant-specific content or fallback to defaults
+  const aboutTitle = tenant?.about_title || 'Tu Socio Confiable en el Mercado Inmobiliario';
+  const aboutDescription = tenant?.about_description ||
+    'Con mas de una decada de experiencia en el sector inmobiliario colombiano, nos especializamos en conectar a nuestros clientes con las propiedades de sus suenos. Nuestro equipo de agentes certificados esta comprometido con brindarte un servicio excepcional en cada paso del proceso.';
+  const aboutImage = tenant?.about_image_url ||
+    'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800';
+
+  // Get stats from tenant or use defaults
+  const stats = tenant?.about_stats || {
+    properties: '250+',
+    clients: '500+',
+    years: '10+',
+    agents: '15+',
+  };
+
+  // Get tenant colors
+  const primaryColor = tenant?.primary_color || '#C9A962';
+
+  // Parse stats for animated counters
+  const propertiesStat = parseStatValue(stats.properties);
+  const agentsStat = parseStatValue(stats.agents);
+  const clientsStat = parseStatValue(stats.clients);
+  const yearsStat = parseStatValue(stats.years);
+
   return (
     <section className="py-20 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
@@ -68,7 +107,7 @@ export function AboutSection() {
             {/* Main Image */}
             <div className="relative z-10 rounded-2xl overflow-hidden shadow-luxus-lg">
               <Image
-                src="https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800"
+                src={aboutImage}
                 alt="Equipo de agentes inmobiliarios"
                 width={500}
                 height={400}
@@ -89,28 +128,30 @@ export function AboutSection() {
 
             {/* Decorative Elements */}
             <div className="absolute -top-4 -left-4 w-24 h-24 bg-luxus-cream rounded-full opacity-50" />
-            <div className="absolute bottom-20 -left-8 w-16 h-16 bg-luxus-gold/20 rounded-full" />
+            <div
+              className="absolute bottom-20 -left-8 w-16 h-16 rounded-full opacity-20"
+              style={{ backgroundColor: primaryColor }}
+            />
           </div>
 
           {/* Content Column */}
           <div className="lg:pl-8">
             {/* Section Label */}
-            <span className="text-luxus-gold font-medium text-sm uppercase tracking-wider">
+            <span
+              className="font-medium text-sm uppercase tracking-wider"
+              style={{ color: primaryColor }}
+            >
               Sobre Nosotros
             </span>
 
             {/* Heading */}
             <h2 className="text-3xl md:text-4xl font-bold text-luxus-dark mt-2 mb-6 font-heading leading-tight">
-              Tu Socio Confiable en el Mercado Inmobiliario
+              {aboutTitle}
             </h2>
 
             {/* Description */}
             <p className="text-luxus-gray mb-6 leading-relaxed">
-              Con mas de una decada de experiencia en el sector inmobiliario
-              colombiano, nos especializamos en conectar a nuestros clientes con
-              las propiedades de sus suenos. Nuestro equipo de agentes
-              certificados esta comprometido con brindarte un servicio
-              excepcional en cada paso del proceso.
+              {aboutDescription}
             </p>
 
             <p className="text-luxus-gray mb-8 leading-relaxed">
@@ -122,7 +163,8 @@ export function AboutSection() {
             {/* CTA Button */}
             <Button
               asChild
-              className="bg-luxus-gold hover:bg-luxus-gold-dark text-white group"
+              className="text-white group"
+              style={{ backgroundColor: primaryColor }}
             >
               <Link href="/nosotros">
                 Conoce Mas
@@ -134,27 +176,27 @@ export function AboutSection() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-8 border-t border-luxus-gray-light">
               <div className="text-center md:text-left">
                 <div className="text-3xl font-bold text-luxus-dark">
-                  <AnimatedCounter end={250} suffix="+" />
+                  <AnimatedCounter end={propertiesStat.value} suffix={propertiesStat.suffix} />
                 </div>
                 <div className="text-sm text-luxus-gray mt-1">Propiedades</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-3xl font-bold text-luxus-dark">
-                  <AnimatedCounter end={15} suffix="+" />
+                  <AnimatedCounter end={agentsStat.value} suffix={agentsStat.suffix} />
                 </div>
                 <div className="text-sm text-luxus-gray mt-1">Agentes</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-3xl font-bold text-luxus-dark">
-                  <AnimatedCounter end={500} suffix="+" />
+                  <AnimatedCounter end={clientsStat.value} suffix={clientsStat.suffix} />
                 </div>
                 <div className="text-sm text-luxus-gray mt-1">Clientes</div>
               </div>
               <div className="text-center md:text-left">
                 <div className="text-3xl font-bold text-luxus-dark">
-                  <AnimatedCounter end={10} suffix="+" />
+                  <AnimatedCounter end={yearsStat.value} suffix={yearsStat.suffix} />
                 </div>
-                <div className="text-sm text-luxus-gray mt-1">Ciudades</div>
+                <div className="text-sm text-luxus-gray mt-1">Años</div>
               </div>
             </div>
           </div>
