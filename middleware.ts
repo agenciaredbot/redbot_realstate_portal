@@ -54,9 +54,20 @@ export async function middleware(request: NextRequest) {
   let tenantId: string = DEFAULT_TENANT_ID;
   let tenantSlug: string = 'redbot';
 
-  // Skip tenant resolution for localhost/development
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    // Try to resolve tenant from custom domain
+  // Main domains that should use default tenant (Redbot)
+  const mainDomains = [
+    'localhost',
+    '127.0.0.1',
+    'redbot.app',
+    'www.redbot.app',
+    'redbot-portal.vercel.app',
+  ];
+
+  // Check if this is a main domain (use default tenant)
+  const isMainDomain = mainDomains.includes(hostname);
+
+  if (!isMainDomain) {
+    // Try to resolve tenant from custom domain first
     let { data: tenant } = await supabaseAdmin
       .from('tenants')
       .select('id, slug, is_active')
@@ -64,14 +75,19 @@ export async function middleware(request: NextRequest) {
       .eq('is_active', true)
       .single();
 
-    // If not found, try subdomain
+    // If not found, try subdomain (e.g., inmobiliaria1.redbot.app)
     if (!tenant) {
       const parts = hostname.split('.');
-      if (parts.length >= 2) {
+      // Check for subdomain pattern: xxx.redbot.app or xxx.redbot-portal.vercel.app
+      const isRedbotSubdomain =
+        (parts.length === 3 && parts[1] === 'redbot' && parts[2] === 'app') ||
+        (parts.length === 4 && parts[1] === 'redbot-portal' && parts[2] === 'vercel' && parts[3] === 'app');
+
+      if (isRedbotSubdomain) {
         const subdomain = parts[0];
 
-        // Skip common subdomains
-        if (!['www', 'app', 'api', 'admin'].includes(subdomain)) {
+        // Skip reserved subdomains
+        if (!['www', 'app', 'api', 'admin', 'super-admin', 'dashboard'].includes(subdomain)) {
           const { data: subdomainTenant } = await supabaseAdmin
             .from('tenants')
             .select('id, slug, is_active')
@@ -81,6 +97,10 @@ export async function middleware(request: NextRequest) {
 
           tenant = subdomainTenant;
         }
+      } else if (parts.length >= 2) {
+        // Custom domain with subdomain (e.g., www.inmobiliaria.com)
+        // Try the full hostname as domain
+        // This case is already handled above
       }
     }
 
