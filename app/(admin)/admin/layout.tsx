@@ -29,10 +29,10 @@ export default function AdminLayout({
     limit: 20,
   });
 
-  // Fetch pending properties count for admin
+  // Fetch pending properties count for admin and super admin
   useEffect(() => {
-    if (profile?.role === 1) {
-      // Admin role
+    if (profile?.role === 0 || profile?.role === 1) {
+      // Super Admin (0) or Admin role (1)
       fetchPendingCount();
     }
   }, [profile?.role]);

@@ -22,6 +22,7 @@ import {
   Home,
   LogOut,
   Bell,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +45,11 @@ export function Sidebar({ profile, pendingCount = 0, onSignOut }: SidebarProps) 
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const role = profile?.role || USER_ROLES.USER;
+  // Get role as number, default to USER (3)
+  const role: number = profile?.role ?? USER_ROLES.USER;
+
+  // Check if user is Super Admin (role = 0)
+  const isSuperAdmin = role === 0;
 
   // Navigation items based on role
   const navItems: NavItem[] = [
@@ -52,19 +57,19 @@ export function Sidebar({ profile, pendingCount = 0, onSignOut }: SidebarProps) 
       label: 'Dashboard',
       href: '/admin/dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      roles: [1, 2, 3],
+      roles: [0, 1, 2, 3], // Added 0 for Super Admin
     },
     {
       label: 'Propiedades',
       href: '/admin/propiedades',
       icon: <Building2 className="h-5 w-5" />,
-      roles: [1, 2],
+      roles: [0, 1, 2], // Added 0 for Super Admin
     },
     {
       label: 'Pendientes',
       href: '/admin/propiedades/pendientes',
       icon: <Clock className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
       badge: pendingCount,
     },
     {
@@ -83,43 +88,43 @@ export function Sidebar({ profile, pendingCount = 0, onSignOut }: SidebarProps) 
       label: 'Agentes',
       href: '/admin/agentes',
       icon: <Users className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
     {
       label: 'Usuarios',
       href: '/admin/usuarios',
       icon: <UserCircle className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
     {
       label: 'Leads',
       href: '/admin/leads',
       icon: <MessageSquare className="h-5 w-5" />,
-      roles: [1, 2],
+      roles: [0, 1, 2], // Added 0 for Super Admin
     },
     {
       label: 'Blog',
       href: '/admin/blog',
       icon: <FileText className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
     {
       label: 'Proyectos',
       href: '/admin/proyectos',
       icon: <FolderKanban className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
     {
       label: 'Testimonios',
       href: '/admin/testimonios',
       icon: <Star className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
     {
       label: 'Configuración',
       href: '/admin/configuracion',
       icon: <Settings className="h-5 w-5" />,
-      roles: [1],
+      roles: [0, 1], // Added 0 for Super Admin
     },
   ];
 
@@ -225,6 +230,18 @@ export function Sidebar({ profile, pendingCount = 0, onSignOut }: SidebarProps) 
 
         {/* Footer */}
         <div className="border-t border-gray-200 p-2">
+          {/* Super Admin link - only for role 0 */}
+          {isSuperAdmin && (
+            <Link
+              href="/super-admin/dashboard"
+              className="flex items-center gap-3 px-3 py-2 mb-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors"
+              title={isCollapsed ? 'Super Admin' : undefined}
+            >
+              <Shield className="h-5 w-5 text-red-400" />
+              {!isCollapsed && <span className="font-medium">Super Admin</span>}
+            </Link>
+          )}
+
           {/* Profile link */}
           <Link
             href="/admin/perfil"
