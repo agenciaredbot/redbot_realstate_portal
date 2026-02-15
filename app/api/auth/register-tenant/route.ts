@@ -251,6 +251,17 @@ export async function POST(request: NextRequest) {
     // SUCCESS RESPONSE
     // =====================================================
 
+    // Determine redirect URL - use subdomain if available, fallback to main domain
+    // For now, always use main domain until DNS propagates for subdomains
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? `https://${normalizedSubdomain}.redbot.app`
+      : 'http://localhost:3000';
+
+    // Fallback to main domain with tenant context
+    const fallbackUrl = process.env.NODE_ENV === 'production'
+      ? 'https://redbot.app'
+      : 'http://localhost:3000';
+
     return NextResponse.json({
       success: true,
       message: 'Inmobiliaria creada exitosamente',
@@ -265,7 +276,9 @@ export async function POST(request: NextRequest) {
           id: authUser.user.id,
           email: authUser.user.email,
         },
-        redirectUrl: `https://${normalizedSubdomain}.redbot.app/admin/onboarding`,
+        // Use main domain for login, then redirect to subdomain
+        redirectUrl: `${fallbackUrl}/login?registered=true&subdomain=${normalizedSubdomain}`,
+        subdomainUrl: `${baseUrl}/admin/onboarding`,
       },
     });
   } catch (error) {

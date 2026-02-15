@@ -155,11 +155,14 @@ export function RegistroInmobiliariaForm() {
       }
 
       // Success!
-      setSuccess({ subdomain: data.data.tenant.subdomain });
+      const subdomain = data.data.tenant.subdomain;
+      setSuccess({ subdomain });
 
       // Redirect after 3 seconds
+      // Try subdomain first, if it fails (DNS not propagated), login will redirect
       setTimeout(() => {
-        window.location.href = data.data.redirectUrl;
+        const subdomainUrl = `https://${subdomain}.redbot.app/admin/onboarding`;
+        window.location.href = subdomainUrl;
       }, 3000);
     } catch (error) {
       console.error('Registration error:', error);

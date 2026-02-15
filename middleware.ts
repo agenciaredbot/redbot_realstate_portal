@@ -211,7 +211,7 @@ export async function middleware(request: NextRequest) {
     // =====================================================
     // TENANT VALIDATION
     // Super Admin (role 0) can access any tenant
-    // Others must match the current tenant
+    // Others must match the current tenant OR redirect to their tenant
     // =====================================================
     if (profile.role !== USER_ROLES.SUPER_ADMIN) {
       // Regular users must belong to the current tenant
@@ -220,6 +220,32 @@ export async function middleware(request: NextRequest) {
           '[Middleware] Tenant mismatch:',
           `user tenant: ${profile.tenant_id}, current tenant: ${tenantId}`
         );
+
+        // If on main domain, redirect user to their tenant's subdomain
+        if (isMainDomain && profile.tenant_id) {
+          // Get the user's tenant subdomain
+          const { data: userTenant } = await supabaseAdmin
+            .from('tenants')
+            .select('subdomain, domain')
+            .eq('id', profile.tenant_id)
+            .single();
+
+          if (userTenant) {
+            // Prefer custom domain, fallback to subdomain
+            let redirectHost = userTenant.domain;
+            if (!redirectHost && userTenant.subdomain) {
+              redirectHost = `${userTenant.subdomain}.redbot.app`;
+            }
+
+            if (redirectHost) {
+              const redirectUrl = new URL(pathname, `https://${redirectHost}`);
+              console.log('[Middleware] Redirecting to tenant subdomain:', redirectUrl.toString());
+              return NextResponse.redirect(redirectUrl);
+            }
+          }
+        }
+
+        // If we can't redirect, show error
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('error', 'tenant_mismatch');
         return NextResponse.redirect(loginUrl);
