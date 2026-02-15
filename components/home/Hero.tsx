@@ -67,9 +67,9 @@ export function Hero({ tenant }: HeroProps) {
           backgroundImage: `url('${heroImage}')`,
         }}
       >
-        {/* Overlay with improved gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-luxus-dark/70 via-luxus-dark/50 to-luxus-gold/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-luxus-dark/80 via-transparent to-luxus-dark/40" />
+        {/* Overlay with improved gradient - 20% darker for better contrast */}
+        <div className="absolute inset-0 bg-gradient-to-br from-luxus-dark/90 via-luxus-dark/70 to-luxus-gold/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-luxus-dark via-transparent to-luxus-dark/60" />
       </div>
 
       {/* Content */}

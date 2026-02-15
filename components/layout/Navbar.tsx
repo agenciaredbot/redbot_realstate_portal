@@ -61,9 +61,9 @@ export function Navbar({ tenant }: NavbarProps) {
               <Image
                 src={logoUrl}
                 alt={companyName}
-                width={120}
-                height={40}
-                className="h-10 w-auto object-contain transition-transform duration-300 group-hover/logo:scale-105"
+                width={156}
+                height={52}
+                className="h-[52px] w-auto object-contain transition-transform duration-300 group-hover/logo:scale-105"
               />
             ) : (
               <>

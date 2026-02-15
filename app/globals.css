@@ -271,6 +271,7 @@
   }
 
   /* Gradient utilities with opacity - for Hero overlays */
+  /* Original values preserved for backwards compatibility */
   .from-luxus-dark\/70 {
     --tw-gradient-from: color-mix(in srgb, var(--color-luxus-dark) 70%, transparent) var(--tw-gradient-from-position);
     --tw-gradient-to: transparent var(--tw-gradient-to-position);
@@ -300,6 +301,32 @@
 
   .to-luxus-gold\/20 {
     --tw-gradient-to: color-mix(in srgb, var(--color-luxus-gold) 20%, transparent) var(--tw-gradient-to-position);
+  }
+
+  /* Darker gradient variants (+20% opacity for better contrast) */
+  .from-luxus-dark\/90 {
+    --tw-gradient-from: color-mix(in srgb, var(--color-luxus-dark) 90%, transparent) var(--tw-gradient-from-position);
+    --tw-gradient-to: transparent var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  .from-luxus-dark {
+    --tw-gradient-from: var(--color-luxus-dark) var(--tw-gradient-from-position);
+    --tw-gradient-to: transparent var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  .via-luxus-dark\/70 {
+    --tw-gradient-to: transparent var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), color-mix(in srgb, var(--color-luxus-dark) 70%, transparent) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+
+  .to-luxus-dark\/60 {
+    --tw-gradient-to: color-mix(in srgb, var(--color-luxus-dark) 60%, transparent) var(--tw-gradient-to-position);
+  }
+
+  .to-luxus-gold\/40 {
+    --tw-gradient-to: color-mix(in srgb, var(--color-luxus-gold) 40%, transparent) var(--tw-gradient-to-position);
   }
 }
 

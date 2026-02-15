@@ -78,9 +78,9 @@ export function Footer({ tenant }: FooterProps) {
                 <Image
                   src={logoUrl}
                   alt={companyName}
-                  width={150}
-                  height={50}
-                  className="h-12 w-auto object-contain"
+                  width={195}
+                  height={65}
+                  className="h-[65px] w-auto object-contain"
                 />
               ) : (
                 <>
