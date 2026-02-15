@@ -7,6 +7,7 @@ import { FreshListings } from '@/components/home/FreshListings';
 import { AgentsCarousel } from '@/components/home/AgentsCarousel';
 import { TestimonialsCarousel } from '@/components/home/TestimonialsCarousel';
 import { BlogPreview } from '@/components/home/BlogPreview';
+import { CTAInmobiliarias } from '@/components/home/CTAInmobiliarias';
 import {
   getFeaturedProperties,
   getRecentProperties,
@@ -88,6 +89,9 @@ export default async function HomePage() {
 
       {/* Testimonials */}
       <TestimonialsCarousel testimonials={testimonials} />
+
+      {/* CTA para Inmobiliarias */}
+      <CTAInmobiliarias />
 
       {/* Blog Preview */}
       <BlogPreview posts={blogPosts} />
