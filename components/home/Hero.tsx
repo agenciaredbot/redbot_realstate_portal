@@ -26,6 +26,30 @@ export function Hero({ tenant }: HeroProps) {
   // Get tenant colors for accent
   const primaryColor = tenant?.primary_color || '#C9A962';
 
+  // Parse hero title - support *word* or **word** syntax to highlight a word
+  // Example: "Encuentra Tu Propiedad *Ideal*" will highlight "Ideal"
+  const renderHeroTitle = () => {
+    // Check for markdown-style highlight syntax: *word* or **word**
+    const highlightMatch = heroTitle.match(/\*{1,2}([^*]+)\*{1,2}/);
+
+    if (highlightMatch) {
+      const highlightedWord = highlightMatch[1];
+      const parts = heroTitle.split(/\*{1,2}[^*]+\*{1,2}/);
+      return (
+        <>
+          {parts[0]}
+          <span style={{ color: primaryColor }} className="drop-shadow-lg">
+            {highlightedWord}
+          </span>
+          {parts[1] || ''}
+        </>
+      );
+    }
+
+    // No highlight syntax - just show title with all words
+    return <>{heroTitle}</>;
+  };
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -44,19 +68,7 @@ export function Hero({ tenant }: HeroProps) {
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16 text-center">
         {/* Main Heading */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 font-heading leading-tight tracking-tight animate-fade-in">
-          {heroTitle.includes(' ') ? (
-            <>
-              {heroTitle.split(' ').slice(0, -1).join(' ')}
-              <br />
-              <span style={{ color: primaryColor }} className="drop-shadow-lg">
-                {heroTitle.split(' ').slice(-1)[0]}
-              </span>
-            </>
-          ) : (
-            <span style={{ color: primaryColor }} className="drop-shadow-lg">
-              {heroTitle}
-            </span>
-          )}
+          {renderHeroTitle()}
         </h1>
 
         {/* Subheading */}

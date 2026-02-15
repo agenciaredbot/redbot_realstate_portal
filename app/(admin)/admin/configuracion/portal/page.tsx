@@ -516,8 +516,11 @@ export default function PortalConfigPage() {
                     id="hero_title"
                     value={config.hero_title || ''}
                     onChange={(e) => setConfig(prev => prev ? { ...prev, hero_title: e.target.value } : null)}
-                    placeholder="Encuentra Tu Propiedad Ideal"
+                    placeholder="Encuentra Tu Propiedad *Ideal*"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Usa *palabra* para destacar en color. Ej: &quot;Encuentra Tu Propiedad *Ideal*&quot;
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="hero_subtitle">Subtítulo</Label>
