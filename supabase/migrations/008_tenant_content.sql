@@ -12,7 +12,7 @@ ALTER TABLE tenants ADD COLUMN IF NOT EXISTS hero_image_url TEXT;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS about_title TEXT;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS about_description TEXT;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS about_image_url TEXT;
-ALTER TABLE tenants ADD COLUMN IF NOT EXISTS about_stats JSONB DEFAULT '{"properties": "0", "clients": "0", "years": "0", "agents": "0"}';
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS about_stats JSONB DEFAULT '{"properties": "100+", "clients": "200+", "years": "5+", "agents": "10+"}';
 
 -- Footer content
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS footer_description TEXT;

@@ -16,11 +16,19 @@ export function Hero({ tenant }: HeroProps) {
     'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80';
 
   // Get stats from tenant about_stats or use defaults
-  const stats = tenant?.about_stats || {
+  // Also replace "0" values with defaults since they're not meaningful
+  const defaultStats = {
     properties: '250+',
     clients: '500+',
     years: '10+',
     agents: '15+',
+  };
+  const rawStats = tenant?.about_stats || defaultStats;
+  const stats = {
+    properties: rawStats.properties && rawStats.properties !== '0' ? rawStats.properties : defaultStats.properties,
+    clients: rawStats.clients && rawStats.clients !== '0' ? rawStats.clients : defaultStats.clients,
+    years: rawStats.years && rawStats.years !== '0' ? rawStats.years : defaultStats.years,
+    agents: rawStats.agents && rawStats.agents !== '0' ? rawStats.agents : defaultStats.agents,
   };
 
   // Get tenant colors for accent
