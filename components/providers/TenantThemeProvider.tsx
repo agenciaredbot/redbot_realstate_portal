@@ -16,19 +16,28 @@ interface TenantThemeProviderProps {
 function applyTenantTheme(tenant: Tenant) {
   const root = document.documentElement;
 
-  // Primary color
-  if (tenant.primary_color) {
-    const primaryHSL = hexToHSL(tenant.primary_color);
-    if (primaryHSL) {
-      root.style.setProperty('--color-luxus-gold', tenant.primary_color);
-      root.style.setProperty('--color-primary', tenant.primary_color);
-      root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+  // Determine the main accent color for the UI
+  // Priority: accent_color_2 > primary_color > default gold
+  // accent_color_2 is the visible accent color (e.g., orange for Luxury Homes)
+  const mainAccentColor = tenant.accent_color_2 || tenant.primary_color || '#C9A962';
+  const mainAccentHSL = hexToHSL(mainAccentColor);
 
-      // Generate hover/active variants
-      root.style.setProperty('--color-luxus-gold-hover', adjustBrightness(tenant.primary_color, -10));
-      root.style.setProperty('--color-luxus-gold-light', adjustBrightness(tenant.primary_color, 40));
-      root.style.setProperty('--color-luxus-gold-dark', adjustBrightness(tenant.primary_color, -15));
-    }
+  if (mainAccentHSL) {
+    // Set the main UI accent color (used by text-luxus-gold, bg-luxus-gold, etc.)
+    root.style.setProperty('--color-luxus-gold', mainAccentColor);
+    root.style.setProperty('--color-primary', mainAccentColor);
+    root.style.setProperty('--primary', `${mainAccentHSL.h} ${mainAccentHSL.s}% ${mainAccentHSL.l}%`);
+
+    // Generate hover/active variants from the main accent color
+    root.style.setProperty('--color-luxus-gold-hover', adjustBrightness(mainAccentColor, -10));
+    root.style.setProperty('--color-luxus-gold-light', adjustBrightness(mainAccentColor, 40));
+    root.style.setProperty('--color-luxus-gold-dark', adjustBrightness(mainAccentColor, -15));
+
+    // Also set accent variables
+    root.style.setProperty('--color-accent', mainAccentColor);
+    root.style.setProperty('--color-accent-2', mainAccentColor);
+    root.style.setProperty('--accent', `${mainAccentHSL.h} ${mainAccentHSL.s}% ${mainAccentHSL.l}%`);
+    root.style.setProperty('--ring', `${mainAccentHSL.h} ${mainAccentHSL.s}% ${mainAccentHSL.l}%`);
   }
 
   // Secondary color (dark) - used for footer background, etc.
@@ -38,22 +47,6 @@ function applyTenantTheme(tenant: Tenant) {
       root.style.setProperty('--color-luxus-dark', tenant.secondary_color);
       root.style.setProperty('--color-secondary', tenant.secondary_color);
       root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
-    }
-  }
-
-  // Accent color (original)
-  if (tenant.accent_color) {
-    root.style.setProperty('--color-accent', tenant.accent_color);
-  }
-
-  // Accent color 2 (secondary accent - e.g., orange for buttons)
-  if (tenant.accent_color_2) {
-    const accent2HSL = hexToHSL(tenant.accent_color_2);
-    if (accent2HSL) {
-      root.style.setProperty('--color-luxus-orange', tenant.accent_color_2);
-      root.style.setProperty('--color-accent-2', tenant.accent_color_2);
-      root.style.setProperty('--accent', `${accent2HSL.h} ${accent2HSL.s}% ${accent2HSL.l}%`);
-      root.style.setProperty('--ring', `${accent2HSL.h} ${accent2HSL.s}% ${accent2HSL.l}%`);
     }
   }
 
