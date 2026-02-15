@@ -15,6 +15,7 @@ import { TestimonialsCarousel } from '@/components/home/TestimonialsCarousel';
 import { BlogPreview } from '@/components/home/BlogPreview';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { TenantThemeProvider } from '@/components/providers/TenantThemeProvider';
 import { getDefaultTenant } from '@/lib/supabase/tenant';
 import { createAdminClient } from '@/lib/supabase/server';
 import type { Tenant } from '@/types/tenant';
@@ -126,20 +127,22 @@ export default async function HomePage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar tenant={tenant} />
-      <main className="flex-1">
-        <Hero tenant={tenant} />
-        <AboutSection tenant={tenant} />
-        <CategoriesSection categories={categories} />
-        <FeaturedListings properties={featuredProperties} agents={agentsMap} />
-        <ServicesSection services={services} />
-        <FreshListings properties={recentProperties} agents={agentsMap} />
-        <AgentsCarousel agents={agents} />
-        <TestimonialsCarousel testimonials={testimonials} />
-        <BlogPreview posts={blogPosts} />
-      </main>
-      <Footer tenant={tenant} />
-    </div>
+    <TenantThemeProvider tenant={tenant}>
+      <div className="min-h-screen flex flex-col">
+        <Navbar tenant={tenant} />
+        <main className="flex-1">
+          <Hero tenant={tenant} />
+          <AboutSection tenant={tenant} />
+          <CategoriesSection categories={categories} />
+          <FeaturedListings properties={featuredProperties} agents={agentsMap} />
+          <ServicesSection services={services} />
+          <FreshListings properties={recentProperties} agents={agentsMap} />
+          <AgentsCarousel agents={agents} />
+          <TestimonialsCarousel testimonials={testimonials} />
+          <BlogPreview posts={blogPosts} />
+        </main>
+        <Footer tenant={tenant} />
+      </div>
+    </TenantThemeProvider>
   );
 }
